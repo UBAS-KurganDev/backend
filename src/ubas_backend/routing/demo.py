@@ -7,7 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from zoneinfo import ZoneInfo
 
-from ubas_backend.routing.models import (
+from ubas_backend.routing.schemas import (
     Airport,
     CityProfile,
     FlightQuery,

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Protocol
 
 from ubas_backend.routing.config import PlannerConfig
-from ubas_backend.routing.models import (
+from ubas_backend.routing.schemas import (
     CityProfile,
     FlightQuery,
     FlightSearchResult,

@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 
 from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.daytime import LocalDaytimeCalculator
-from ubas_backend.routing.models import (
+from ubas_backend.routing.schemas import (
     CityProfile,
     FlightQuery,
     FlightSearchResult,

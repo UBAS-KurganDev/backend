@@ -5,7 +5,7 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 
-from ubas_backend.routing.models import CityProfile, Code, Model
+from ubas_backend.routing.schemas import CityProfile, Code, Model
 
 
 class FlightLink(Model):

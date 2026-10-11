@@ -1,7 +1,7 @@
 """Explainable weighted utilities, each normalized into [0, 1]."""
 
 from ubas_backend.routing.config import PlannerConfig
-from ubas_backend.routing.models import RouteCandidate, RouteScore, ScoreComponent
+from ubas_backend.routing.schemas import RouteCandidate, RouteScore, ScoreComponent
 
 
 class WeightedScorer:

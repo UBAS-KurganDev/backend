@@ -4,7 +4,7 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from ubas_backend.routing.models import Model, NonNegative, PositiveHours, UnitScore
+from ubas_backend.routing.schemas import Model, NonNegative, PositiveHours, UnitScore
 
 
 class ScoreWeights(Model):
