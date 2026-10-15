@@ -13,14 +13,16 @@ uv sync --locked
 uv run python -m ubas_backend.routing.demo
 ```
 
-Пример использует только вымышленные данные. [Контракты, алгоритм и настройки](docs/routing.md).
+Пример использует только вымышленные данные. Документация:
+
+- [контракт билетов, настройки и запуск](docs/routing.md);
+- [устройство, логика работы и алгоритмы](docs/architecture.md).
 
 ## Стек
 
 - Python 3.14.
 - [uv](https://docs.astral.sh/uv/) — зависимости, виртуальное окружение и сборка.
 - [Ruff](https://docs.astral.sh/ruff/) — линтинг, сортировка импортов и форматирование.
-- [mypy](https://mypy.readthedocs.io/) — строгая статическая проверка типов.
 
 ## Быстрый старт
 
@@ -28,8 +30,8 @@ uv run python -m ubas_backend.routing.demo
 Затем выполните:
 
 ```shell
-git clone https://github.com/hardPrecision/ubas-backend.git
-cd ubas-backend
+git clone https://github.com/UBAS-KurganDev/backend.git
+cd backend
 uv python install
 uv sync --locked
 ```
@@ -42,7 +44,6 @@ uv sync --locked
 ```shell
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked mypy
 ```
 
 Автоматическое исправление поддерживаемых ошибок и форматирование:
@@ -52,8 +53,7 @@ uv run --locked ruff check --fix .
 uv run --locked ruff format .
 ```
 
-Настройки инструментов находятся в `pyproject.toml`. mypy проверяет `src`
-в строгом режиме; при добавлении тестов включите их каталог в `tool.mypy.files`.
+Настройки Ruff находятся в `pyproject.toml`.
 
 ## Зависимости
 
@@ -67,12 +67,7 @@ uv remove <package>
 Для целевого обновления зависимости используйте `uv lock --upgrade-package <package>`,
 после чего выполните `uv sync --locked` и проверки.
 
-## Сборка и CI
+## CI
 
-```shell
-uv build --no-sources
-```
-
-Архив исходников и wheel создаются в `dist/`.
-GitHub Actions при каждом push и pull request устанавливает зависимости по lock-файлу,
-запускает Ruff и mypy, затем собирает пакет.
+GitHub Actions при каждом push и pull request устанавливает зависимости по lock-файлу
+и запускает Ruff: линтинг и проверку форматирования.
