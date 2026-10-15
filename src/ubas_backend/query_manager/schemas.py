@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from ubas_backend.routing.schemas import RouteRequest, PlanResult, FlightSearchResult
+from ubas_backend.routing.schemas import FlightSearchResult, PlanResult, RouteRequest
 
 QueryStatus = Literal["queued", "running", "completed", "failed"]
 
@@ -25,6 +25,7 @@ class GetQueryResponse(BaseModel):
     updated_at: datetime
     result: PlanResult | None = None
     error: str | None = None
+
 
 class QueryResult(FlightSearchResult):
     query_id: UUID

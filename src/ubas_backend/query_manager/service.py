@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from ubas_backend.query_manager.schemas import (
@@ -9,7 +9,7 @@ from ubas_backend.query_manager.schemas import (
 )
 
 
-#TODO написать реальные методы вместо заглушек
+# TODO написать реальные методы вместо заглушек
 class QueryManager:
     async def submit_query(
         self,
@@ -24,7 +24,7 @@ class QueryManager:
         self,
         query_id: UUID,
     ) -> GetQueryResponse:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         return GetQueryResponse(
             query_id=query_id,

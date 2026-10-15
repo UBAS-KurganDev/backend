@@ -7,6 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from zoneinfo import ZoneInfo
 
+from ubas_backend.routing.planner import RoutePlanner
 from ubas_backend.routing.schemas import (
     Airport,
     CityProfile,
@@ -18,7 +19,6 @@ from ubas_backend.routing.schemas import (
     TicketOffer,
     VisaPolicy,
 )
-from ubas_backend.routing.planner import RoutePlanner
 from ubas_backend.routing.storage import CatalogData, FlightLink, SqliteCatalog
 
 

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
@@ -9,7 +9,8 @@ from ubas_backend.api.schemas import (
 )
 from ubas_backend.query_manager.schemas import (
     GetQueryResponse,
-    SubmitQueryRequest, QueryResult,
+    QueryResult,
+    SubmitQueryRequest,
 )
 from ubas_backend.query_manager.service import QueryManager
 from ubas_backend.routing.schemas import RouteRequest
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/queries", tags=["queries"])
 
 
 def get_query_manager(request: Request) -> QueryManager:
-    return request.app.state.query_manager
+    return cast("QueryManager", request.app.state.query_manager)
 
 
 QueryManagerDep = Annotated[QueryManager, Depends(get_query_manager)]
@@ -29,9 +30,7 @@ async def create_query(
     query: RouteRequest,
     query_manager: QueryManagerDep,
 ) -> CreateQueryResponse:
-    result = await query_manager.submit_query(
-        SubmitQueryRequest(request=query)
-    )
+    result = await query_manager.submit_query(SubmitQueryRequest(request=query))
 
     return CreateQueryResponse(query_id=result.query_id)
 
@@ -47,6 +46,7 @@ async def get_query_status(
         query_id=result.query_id,
         status=result.status,
     )
+
 
 @router.get("/{query_id}/result", response_model=QueryResult)
 async def get_query_result(

@@ -13,6 +13,14 @@ from zoneinfo import ZoneInfo
 
 from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.daytime import LocalDaytimeCalculator
+from ubas_backend.routing.ports import (
+    CityRepository,
+    DaytimeCalculator,
+    FlightProvider,
+    FlightProviderError,
+    RouteScorer,
+    TopologyRepository,
+)
 from ubas_backend.routing.schemas import (
     CityProfile,
     FlightQuery,
@@ -25,14 +33,6 @@ from ubas_backend.routing.schemas import (
     TicketOffer,
     VisaPolicy,
     VisitMetrics,
-)
-from ubas_backend.routing.ports import (
-    CityRepository,
-    DaytimeCalculator,
-    FlightProvider,
-    FlightProviderError,
-    RouteScorer,
-    TopologyRepository,
 )
 from ubas_backend.routing.scoring import WeightedScorer
 
