@@ -1,4 +1,4 @@
-name: Lint
+name: Quality checks
 
 on:
   push:
@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  ruff:
-    name: Ruff
+  quality:
+    name: Ruff and mypy
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,3 +31,6 @@ jobs:
 
       - name: Check formatting
         run: uv run --locked ruff format --check .
+
+      - name: Check types
+        run: uv run --locked mypy

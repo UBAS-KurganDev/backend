@@ -23,6 +23,7 @@ uv run python -m ubas_backend.routing.demo
 - Python 3.14.
 - [uv](https://docs.astral.sh/uv/) — зависимости, виртуальное окружение и сборка.
 - [Ruff](https://docs.astral.sh/ruff/) — линтинг, сортировка импортов и форматирование.
+- [mypy](https://mypy.readthedocs.io/) — строгая статическая проверка типов.
 
 ## Быстрый старт
 
@@ -44,6 +45,7 @@ uv sync --locked
 ```shell
 uv run --locked ruff check .
 uv run --locked ruff format --check .
+uv run --locked mypy
 ```
 
 Автоматическое исправление поддерживаемых ошибок и форматирование:
@@ -53,7 +55,7 @@ uv run --locked ruff check --fix .
 uv run --locked ruff format .
 ```
 
-Настройки Ruff находятся в `pyproject.toml`.
+Настройки Ruff и mypy находятся в `pyproject.toml`.
 
 ## Зависимости
 
@@ -70,4 +72,5 @@ uv remove <package>
 ## CI
 
 GitHub Actions при каждом push и pull request устанавливает зависимости по lock-файлу
-и запускает Ruff: линтинг и проверку форматирования.
+и запускает Ruff (линтинг и проверку форматирования) и mypy. Тесты и сборка пока
+не запускаются.
