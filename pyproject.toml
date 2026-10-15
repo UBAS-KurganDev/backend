@@ -8,7 +8,11 @@ dependencies = [
     "fastapi>=0.143.0",
     "pydantic>=2.12,<3",
     "tzdata>=2026.4",
+    "uvicorn[standard]>=0.30,<1",
 ]
+
+[project.scripts]
+ubas-api = "ubas_backend.main:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
