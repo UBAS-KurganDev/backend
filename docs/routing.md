@@ -4,7 +4,7 @@
 
 `FlightProvider.search(FlightQuery) -> FlightSearchResult` — асинхронный порт
 в `routing/ports.py`. HTTP/SDK-адаптер провайдера нужно реализовать отдельно.
-Модели в `routing/models.py` валидируются Pydantic, поддерживают
+Модели в `routing/schemas.py` валидируются Pydantic, поддерживают
 `model_validate_json`, `model_dump_json` и `model_json_schema`.
 
 Запрос передаёт города IATA (например, MOW, а не аэропорт SVO), диапазон **местных

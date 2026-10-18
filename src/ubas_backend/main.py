@@ -1,18 +1,42 @@
+"""FastAPI application and its lifecycle-managed runtime dependencies."""
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 
 from ubas_backend.api.router import router
-from ubas_backend.query_manager.service import QueryManager
+from ubas_backend.runtime import Runtime, create_runtime
+from ubas_backend.settings import Settings
 
-app = FastAPI(title="UBAS Backend")
 
-app.state.query_manager = QueryManager()
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    settings = Settings.from_environment(need_planner=False)
+    runtime: Runtime = await create_runtime(
+        settings, include_worker=settings.embedded_worker
+    )
+    app.state.query_manager = runtime.manager
+    if runtime.worker is not None:
+        runtime.worker.start()
+    try:
+        yield
+    finally:
+        await runtime.close()
 
-app.include_router(router, prefix="/api/v1")
+
+def create_app() -> FastAPI:
+    app = FastAPI(title="UBAS Backend", lifespan=lifespan)
+    app.include_router(router, prefix="/api/v1")
+    return app
+
+
+app = create_app()
 
 
 def main() -> None:
-    """Run the development ASGI server on http://127.0.0.1:8000."""
+    """Run the ASGI server on http://127.0.0.1:8000."""
     uvicorn.run("ubas_backend.main:app", host="127.0.0.1", port=8000)
 
 
