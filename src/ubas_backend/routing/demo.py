@@ -149,6 +149,7 @@ async def main() -> None:
             ),
             now=now,
         )
+        catalog.close()
         print(result.model_dump_json(indent=2))
 
 

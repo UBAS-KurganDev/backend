@@ -19,7 +19,8 @@ type Code = Annotated[str, Field(pattern=r"^[A-Z]{3}$")]
 type CountryCode = Annotated[str, Field(pattern=r"^[A-Z]{2}$")]
 type UnitScore = Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)]
 type NonNegative = Annotated[float, Field(ge=0, allow_inf_nan=False)]
-type PositiveHours = Annotated[float, Field(gt=0, allow_inf_nan=False)]
+type Positive = Annotated[float, Field(gt=0, allow_inf_nan=False)]
+type PositiveHours = Positive
 
 
 class Model(BaseModel):

@@ -19,6 +19,8 @@ uv run python -m ubas_backend.routing.demo
 - [контракт билетов, настройки и запуск](docs/routing.md);
 - [устройство, логика работы и алгоритмы](docs/architecture.md).
 
+Правила разработки и карта проекта для агентов — в [AGENTS.md](AGENTS.md).
+
 ## Запуск API и worker
 
 После `uv sync --locked` заполните переменные окружения по [.env.example](.env.example),
@@ -27,6 +29,12 @@ uv run python -m ubas_backend.routing.demo
 ```shell
 uv run ubas-migrate
 ```
+
+Если настройки лежат в `.env`, используйте `uv run --env-file .env ubas-migrate`
+(аналогично для `ubas-api` и `ubas-worker`): приложение само `.env` не читает.
+Переход со старой SQL-миграции выполняется автоматически с сохранением задач,
+результатов и существующих ключей. Перед обновлением остановите старые API/worker,
+после миграции запустите новую версию.
 
 Затем запустите API и worker в разных терминалах:
 
@@ -49,6 +57,7 @@ uv run uvicorn ubas_backend.main:app --reload
 ## Стек
 
 - Python 3.14.
+- SQLAlchemy ORM/Core для PostgreSQL и SQLite, Alembic для миграций.
 - [uv](https://docs.astral.sh/uv/) — зависимости, виртуальное окружение и сборка.
 - [Ruff](https://docs.astral.sh/ruff/) — линтинг, сортировка импортов и форматирование.
 - [mypy](https://mypy.readthedocs.io/) — строгая статическая проверка типов.
@@ -84,6 +93,22 @@ uv run --locked ruff format .
 ```
 
 Настройки Ruff и mypy находятся в `pyproject.toml`.
+
+Регрессионные проверки API, планировщика и worker:
+
+```shell
+uv run --locked python -m unittest discover -s tests -v
+```
+
+При заданном `UBAS_TEST_DATABASE_URL` также выполняются конкурентные проверки
+на настоящем PostgreSQL. Имя тестовой БД должно начинаться с `ubas_test_`:
+проверки очищают её очередь. Без этой переменной PostgreSQL-проверки пропускаются.
+CI по-прежнему запускает только Ruff и mypy.
+
+Для настройки эвристик задайте `UBAS_PLANNER_CONFIG_PATH` — путь к JSON
+`PlannerConfig`, одинаковому для API и worker. По умолчанию поддерживается RUB;
+другие валюты требуют `price_references` и соответствующих данных провайдера/виз.
+Подробности — в [routing.md](docs/routing.md).
 
 ## Зависимости
 

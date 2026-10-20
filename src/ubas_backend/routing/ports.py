@@ -1,7 +1,7 @@
 """Implement these protocols to connect services, storage, or new ranking."""
 
 from datetime import datetime
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.schemas import (
@@ -19,6 +19,11 @@ class FlightProviderError(Exception):
 
 class FlightProvider(Protocol):
     async def search(self, query: FlightQuery) -> FlightSearchResult: ...
+
+
+@runtime_checkable
+class AsyncCloseable(Protocol):
+    async def aclose(self) -> None: ...
 
 
 class TopologyRepository(Protocol):

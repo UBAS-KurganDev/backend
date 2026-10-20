@@ -20,7 +20,12 @@ class WeightedScorer:
             - config.airport_change_penalty * metrics.airport_change,
         )
         values = {
-            "price": 1 / (1 + float(route.total_cost.amount) / config.price_reference),
+            "price": 1
+            / (
+                1
+                + float(route.total_cost.amount)
+                / config.price_references[route.total_cost.currency]
+            ),
             "tourism": tourism,
             "daytime": metrics.daytime_fraction
             * min(visit / config.target_daytime_hours, 1),

@@ -1,9 +1,12 @@
 """Explicit runtime configuration; secrets stay outside source control."""
 
+import math
 import os
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
+
+from ubas_backend.routing.config import PlannerConfig
 
 
 def _required(name: str) -> str:
@@ -22,7 +25,7 @@ def _positive_int(name: str, default: int) -> int:
 
 def _positive_float(name: str, default: float) -> float:
     value = float(os.getenv(name, str(default)))
-    if value <= 0:
+    if not math.isfinite(value) or value <= 0:
         raise RuntimeError(f"{name} must be positive")
     return value
 
@@ -49,9 +52,13 @@ class Settings:
     worker_lease_duration: timedelta
     worker_retry_delay: timedelta
     worker_max_attempts: int
+    worker_execution_timeout: float
+    planner_config: PlannerConfig
 
     @classmethod
-    def from_environment(cls, *, need_planner: bool = True) -> Settings:
+    def from_environment(cls, *, need_planner: bool | None = True) -> Settings:
+        embedded = _flag("UBAS_EMBEDDED_WORKER", False)
+        need_planner = embedded if need_planner is None else need_planner
         provider = os.getenv("UBAS_FLIGHT_PROVIDER_FACTORY", "")
         if need_planner and not provider:
             raise RuntimeError("UBAS_FLIGHT_PROVIDER_FACTORY must be configured")
@@ -61,7 +68,7 @@ class Settings:
                 Path(_required("UBAS_CATALOG_PATH")) if need_planner else None
             ),
             flight_provider_factory=provider,
-            embedded_worker=_flag("UBAS_EMBEDDED_WORKER", False),
+            embedded_worker=embedded,
             worker_concurrency=_positive_int("UBAS_WORKER_CONCURRENCY", 2),
             worker_poll_interval=_positive_float("UBAS_WORKER_POLL_INTERVAL", 1),
             worker_lease_duration=timedelta(
@@ -71,4 +78,15 @@ class Settings:
                 seconds=_positive_float("UBAS_WORKER_RETRY_SECONDS", 5)
             ),
             worker_max_attempts=_positive_int("UBAS_WORKER_MAX_ATTEMPTS", 3),
+            worker_execution_timeout=_positive_float(
+                "UBAS_WORKER_TIMEOUT_SECONDS", 300
+            ),
+            planner_config=load_planner_config(),
         )
+
+
+def load_planner_config() -> PlannerConfig:
+    path = os.getenv("UBAS_PLANNER_CONFIG_PATH")
+    if path is None:
+        return PlannerConfig()
+    return PlannerConfig.model_validate_json(Path(path).read_text(encoding="utf-8"))

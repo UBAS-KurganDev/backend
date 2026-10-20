@@ -4,7 +4,14 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from ubas_backend.routing.schemas import Model, NonNegative, PositiveHours, UnitScore
+from ubas_backend.routing.schemas import (
+    Code,
+    Model,
+    NonNegative,
+    Positive,
+    PositiveHours,
+    UnitScore,
+)
 
 
 class ScoreWeights(Model):
@@ -25,7 +32,9 @@ class ScoreWeights(Model):
 class PlannerConfig(Model):
     weights: ScoreWeights = Field(default_factory=ScoreWeights)
     # Fixed scales keep scores stable when unrelated alternatives are added.
-    price_reference: float = Field(gt=0, default=60_000)
+    price_references: dict[Code, Positive] = Field(
+        default_factory=lambda: {"RUB": 60_000.0}
+    )
     duration_reference_hours: PositiveHours = 72
     target_daytime_hours: PositiveHours = 10
     self_transfer_penalty: UnitScore = 0.7
@@ -54,6 +63,8 @@ class PlannerConfig(Model):
 
     @model_validator(mode="after")
     def valid_limits(self) -> Self:
+        if not self.price_references:
+            raise ValueError("Configure at least one currency price reference")
         if not (self.allow_self_transfer or self.search_through_tickets):
             raise ValueError("Enable at least one ticket search mode")
         if self.max_stopover_hours < self.min_stopover_hours:

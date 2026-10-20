@@ -14,6 +14,7 @@ from ubas_backend.query_manager.schemas import (
     SubmitQueryResponse,
 )
 from ubas_backend.query_manager.service import QueryManager
+from ubas_backend.routing.policy import InvalidRouteRequest
 from ubas_backend.routing.schemas import RouteRequest
 
 router = APIRouter(prefix="/queries", tags=["queries"])
@@ -34,7 +35,7 @@ async def create_query(
     query_manager: QueryManagerDep,
     response: Response,
     idempotency_key: Annotated[
-        str | None, Header(alias="Idempotency-Key", max_length=255)
+        str | None, Header(alias="Idempotency-Key", min_length=1, max_length=255)
     ] = None,
 ) -> SubmitQueryResponse:
     try:
@@ -45,6 +46,10 @@ async def create_query(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Idempotency-Key was already used with a different request.",
+        ) from error
+    except InvalidRouteRequest as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)
         ) from error
     response.headers["Location"] = f"/api/v1/queries/{result.query_id}"
     return result

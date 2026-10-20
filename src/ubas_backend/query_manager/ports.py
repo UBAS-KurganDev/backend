@@ -1,6 +1,7 @@
 """Storage boundary for the API service and the asynchronous worker."""
 
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Protocol
 from uuid import UUID
 
@@ -26,23 +27,16 @@ class IdempotencyConflictError(Exception):
     """One idempotency key was reused with a different request body."""
 
 
+@dataclass(frozen=True, slots=True)
 class ClaimedQuery:
     """One lease owner may run the query until its expiry."""
 
-    def __init__(
-        self,
-        *,
-        query_id: UUID,
-        request: RouteRequest,
-        lease_token: UUID,
-        attempt: int,
-        lease_expires_at: datetime,
-    ) -> None:
-        self.query_id = query_id
-        self.request = request
-        self.lease_token = lease_token
-        self.attempt = attempt
-        self.lease_expires_at = lease_expires_at
+    query_id: UUID
+    request: RouteRequest
+    lease_token: UUID
+    attempt: int
+    max_attempts: int
+    lease_expires_at: datetime
 
 
 class QueryRepository(Protocol):
@@ -52,7 +46,7 @@ class QueryRepository(Protocol):
 
     async def get_result(self, query_id: UUID) -> QueryResult: ...
 
-    async def claim_next(self, now: datetime) -> ClaimedQuery | None: ...
+    async def claim_next(self) -> ClaimedQuery | None: ...
 
     async def complete(
         self, query_id: UUID, lease_token: UUID, result: QueryResult
@@ -63,11 +57,9 @@ class QueryRepository(Protocol):
         query_id: UUID,
         lease_token: UUID,
         failure: QueryFailure,
-        retry_at: datetime | None,
+        retry_delay: timedelta | None,
     ) -> bool: ...
 
-    async def extend_lease(
-        self, query_id: UUID, lease_token: UUID, now: datetime
-    ) -> bool: ...
+    async def extend_lease(self, query_id: UUID, lease_token: UUID) -> bool: ...
 
     async def release(self, query_id: UUID, lease_token: UUID) -> bool: ...

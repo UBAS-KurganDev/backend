@@ -13,7 +13,7 @@ from ubas_backend.settings import Settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    settings = Settings.from_environment(need_planner=False)
+    settings = Settings.from_environment(need_planner=None)
     runtime: Runtime = await create_runtime(
         settings, include_worker=settings.embedded_worker
     )
