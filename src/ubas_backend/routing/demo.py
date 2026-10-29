@@ -23,13 +23,16 @@ from ubas_backend.routing.storage import CatalogData, FlightLink, SqliteCatalog
 
 
 class DemoFlightProvider:
-    def __init__(self, offers: tuple[TicketOffer, ...]) -> None:
+    def __init__(self, offers: tuple[TicketOffer, ...] | None = None) -> None:
         self.offers = offers
 
     async def search(self, query: FlightQuery) -> FlightSearchResult:
+        offers = (
+            self.offers if self.offers is not None else _demo_offers(datetime.now(UTC))
+        )
         matches = [
             offer
-            for offer in self.offers
+            for offer in offers
             if offer.segments[0].origin.city_code == query.origin
             and offer.segments[-1].destination.city_code == query.destination
             and len(offer.segments) == (2 if query.stopover_city else 1)
@@ -48,11 +51,16 @@ class DemoFlightProvider:
         return FlightSearchResult(
             offers=tuple(matches[: query.limit]),
             complete=len(matches) <= query.limit,
+            warnings=("synthetic_demo_data",),
         )
 
 
-async def main() -> None:
-    now = datetime.now(UTC)
+def create_flight_provider() -> DemoFlightProvider:
+    """Opt-in worker factory; refresh synthetic quotes on every search."""
+    return DemoFlightProvider()
+
+
+def _demo_offers(now: datetime) -> tuple[TicketOffer, ...]:
     departure = (now + timedelta(days=14)).replace(
         hour=1, minute=0, second=0, microsecond=0
     )
@@ -97,13 +105,18 @@ async def main() -> None:
             expires_at=now + timedelta(minutes=20),
         )
 
-    provider = DemoFlightProvider(
-        (
-            offer("outbound", (first,), "12000"),
-            offer("onward", (second,), "24000"),
-            offer("through", (first, second), "42000", protected=True),
-        )
+    return (
+        offer("outbound", (first,), "12000"),
+        offer("onward", (second,), "24000"),
+        offer("through", (first, second), "42000", protected=True),
     )
+
+
+async def main() -> None:
+    now = datetime.now(UTC)
+    offers = _demo_offers(now)
+    provider = DemoFlightProvider(offers)
+    departure = offers[0].segments[0].departure_at
     city = CityProfile(
         city_code="ALA",
         name="Алматы (демонстрационные данные)",

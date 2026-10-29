@@ -8,6 +8,17 @@ from pathlib import Path
 
 from ubas_backend.routing.config import PlannerConfig
 
+DEFAULT_CORS_ORIGINS = ("http://localhost:5173", "http://127.0.0.1:5173")
+
+
+def load_cors_origins() -> tuple[str, ...]:
+    raw = os.getenv("UBAS_CORS_ORIGINS")
+    if raw is None:
+        return DEFAULT_CORS_ORIGINS
+    return tuple(
+        origin.strip().rstrip("/") for origin in raw.split(",") if origin.strip()
+    )
+
 
 def _required(name: str) -> str:
     value = os.getenv(name)
