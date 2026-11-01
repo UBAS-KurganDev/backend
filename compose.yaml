@@ -15,6 +15,8 @@ x-application: &application
   environment: &application-environment
     <<: *database-environment
     UBAS_EMBEDDED_WORKER: "false"
+    # API persists this limit when submitting a job; workers honor that value.
+    UBAS_WORKER_MAX_ATTEMPTS: ${UBAS_WORKER_MAX_ATTEMPTS:-3}
     UBAS_PLANNER_CONFIG_PATH:
   volumes:
     - ./var:/app/var:ro
@@ -75,7 +77,6 @@ services:
       UBAS_WORKER_POLL_INTERVAL: ${UBAS_WORKER_POLL_INTERVAL:-1}
       UBAS_WORKER_LEASE_SECONDS: ${UBAS_WORKER_LEASE_SECONDS:-90}
       UBAS_WORKER_RETRY_SECONDS: ${UBAS_WORKER_RETRY_SECONDS:-5}
-      UBAS_WORKER_MAX_ATTEMPTS: ${UBAS_WORKER_MAX_ATTEMPTS:-3}
       UBAS_WORKER_TIMEOUT_SECONDS: ${UBAS_WORKER_TIMEOUT_SECONDS:-300}
 
 volumes:

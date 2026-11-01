@@ -89,10 +89,24 @@ docker compose --profile worker up --build -d
 но не выполняет поиск. Значение фабрики из `.env.example` — шаблон; реальный
 адаптер не поставляется. Каталог, созданный из демо, содержит вымышленные сведения.
 
-Для проверки всей системы с демонстрационным SQLite-каталогом задайте в `.env`:
+Для проверки всей системы сначала создайте отдельный демонстрационный каталог:
+
+```shell
+uv run --locked python -m ubas_backend.routing.demo --catalog ./var/demo-catalog.sqlite3
+```
+
+Если на хосте установлен только Docker, эту команду можно выполнить в образе
+без запуска БД и миграций (для записи в bind mount используется root):
+
+```shell
+docker compose run --rm --no-deps --build --user 0:0 --volume ./var:/app/var:rw api python -m ubas_backend.routing.demo --catalog ./var/demo-catalog.sqlite3
+```
+
+Затем задайте в `.env`:
 
 ```dotenv
 UBAS_FLIGHT_PROVIDER_FACTORY=ubas_backend.routing.demo:create_flight_provider
+UBAS_CATALOG_PATH=./var/demo-catalog.sqlite3
 COMPOSE_PROFILES=worker
 ```
 
@@ -105,6 +119,13 @@ API и worker. `python3 scripts/query_route.py` без аргументов от
 Срок действия предложений обновляется при каждом обращении, а в ответе есть
 предупреждение `synthetic_demo_data`. Запись результата в очереди не обновляет
 сохранённые предложения: новый поиск после завершения создаётся с новым ключом.
+
+Каталог генерируется с визовыми датами от момента запуска команды на 90 дней.
+Перед повторной демонстрацией остановите worker и повторите команду подготовки
+с `--overwrite`, затем запустите worker. Это заменит выбранный файл целиком;
+используйте только отдельный демо-каталог. Без флага существующий файл не меняется.
+Worker не обновляет визовые сведения автоматически. SQLite-каталоги не хранятся
+в Git; `var/demo-result.json` — исторический пример ответа, а не актуальные билеты.
 
 Логи и остановка с сохранением данных:
 

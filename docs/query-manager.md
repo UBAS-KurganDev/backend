@@ -136,6 +136,11 @@ Worker дополнительно требует существующий SQLite
 worker. По умолчанию разрешена RUB с масштабом 60000. Для другой валюты задайте
 соответствующее значение в `price_references` и обеспечьте данные в этой валюте.
 
+`UBAS_WORKER_MAX_ATTEMPTS` должен совпадать у API и worker: API сохраняет лимит
+при создании задачи, worker использует сохранённое значение. Compose передаёт
+настройку обоим сервисам. Изменение влияет только на новые задачи; прежние задачи
+и повторы с уже использованным ключом сохраняют исходный лимит.
+
 ```shell
 uv sync --locked
 uv run --env-file .env ubas-migrate
@@ -234,13 +239,23 @@ docker compose exec postgres sh -c 'exec psql -U "$POSTGRES_USER" -d "$POSTGRES_
 выключен: обработка выполняется отдельным сервисом.
 
 Для проверки всего цикла с демонстрационным каталогом доступна фабрика
-`ubas_backend.routing.demo:create_flight_provider`. Задайте её в
-`UBAS_FLIGHT_PROVIDER_FACTORY` и добавьте `COMPOSE_PROFILES=worker` в `.env`,
+`ubas_backend.routing.demo:create_flight_provider`. Сначала создайте каталог:
+
+```shell
+uv run --locked python -m ubas_backend.routing.demo --catalog ./var/demo-catalog.sqlite3
+```
+
+Вариант без локального Python приведён в [README](../README.md#запуск-через-docker-compose).
+Задайте фабрику в `UBAS_FLIGHT_PROVIDER_FACTORY`, путь
+`UBAS_CATALOG_PATH=./var/demo-catalog.sqlite3` и `COMPOSE_PROFILES=worker` в `.env`,
 чтобы обычный `docker compose up --build -d` включал worker. Это явное включение
 демо с вымышленными билетами, а не подключение к реальному билетному сервису.
 Границы набора данных описаны в [routing.md](routing.md#запуск-примера).
 Worker использует существующий SQLite-файл и обрабатывает также ранее
 поставленные в очередь запросы. Каталог не переписывается при выборе фабрики.
+Для обновления синтетических дат остановите worker и повторите команду подготовки
+с `--overwrite`, затем запустите worker. Флаг полностью заменяет выбранный файл;
+его нельзя применять к реальному каталогу. Без него существующий файл сохраняется.
 
 Если нужен общий `PlannerConfig`, разместите JSON в `./var/planner.json`
 и задайте `UBAS_PLANNER_CONFIG_PATH=./var/planner.json`. Значение передаётся

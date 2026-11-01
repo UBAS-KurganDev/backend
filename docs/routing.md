@@ -187,6 +187,20 @@ uv run python -m ubas_backend.routing.demo
 Для запуска такого же провайдера в отдельном worker задайте
 `UBAS_FLIGHT_PROVIDER_FACTORY=ubas_backend.routing.demo:create_flight_provider`.
 Фабрика не создаёт каталог: worker читает файл из `UBAS_CATALOG_PATH`.
+Создайте отдельный файл с датами относительно текущего времени:
+
+```shell
+uv run --locked python -m ubas_backend.routing.demo --catalog ./var/demo-catalog.sqlite3
+```
+
+Укажите `UBAS_CATALOG_PATH=./var/demo-catalog.sqlite3`. Команда создаёт профиль
+Алматы и связи MOW → ALA → TYO; вымышленные визовые сведения действуют 90 дней
+от даты генерации. Перед повторной демонстрацией остановите worker, выполните
+команду с `--overwrite` и снова запустите worker. Флаг заменяет выбранный файл
+целиком и предназначен только для демо-каталога; без него перезапись запрещена.
+Ни фабрика, ни worker не продлевают визовые сведения. Генерируемые SQLite-файлы
+не версионируются. Пример `var/demo-result.json` содержит исторические даты.
+
 В Compose профиль `worker` можно постоянно включить через `COMPOSE_PROFILES=worker`
 в локальном `.env`.
 

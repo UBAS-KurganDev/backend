@@ -24,3 +24,7 @@ coverage.xml
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Generated catalogs (prepare demo data with routing.demo --catalog).
+var/*.sqlite3
+var/*.sqlite3-*
