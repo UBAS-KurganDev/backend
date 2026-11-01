@@ -183,3 +183,33 @@ uv run python -m ubas_backend.routing.demo
 Пример создаёт временную SQLite-базу, подставляет вымышленные цены и визовые правила
 и выводит JSON с двумя вариантами через Алматы. Даты формируются относительно
 момента запуска. Внешние сервисы и реальные визовые сведения не используются.
+
+## Поставляемый адаптер agent.ru
+
+В пакете есть готовый `FlightProvider` поверх скрапера agent.ru
+(`src/ubas_backend/agent_scraper`). Адаптер открывает headless-браузер,
+перехватывает ответы `api/air/offers` и отображает их в `TicketOffer`:
+неизвестные аэропорты, расписание и цены отбрасываются с типизированными
+причинами, транспортные сбои переводятся в `FlightProviderError`.
+
+Подключение:
+
+```shell
+UBAS_FLIGHT_PROVIDER_FACTORY=ubas_backend.agent_scraper.provider:create_flight_provider
+```
+
+Скраперу нужны Redis (кэш ответов) и установленный браузер Playwright
+(`uv run playwright install chromium`); настройки — `REDIS_HOST`, `REDIS_PORT`,
+`REDIS_DB`, `REDIS_PASSWORD`, `HEADLESS_MODE`, `CACHE_TTL_SECONDS` в `.env`.
+Ответы agent.ru привязаны к конкретной дате вылета, поэтому адаптер ищет
+на середину диапазона `FlightQuery` и кэширует сырые ответы по направлению.
+
+Перед запуском worker заполните каталог топологией и профилями городов:
+
+```shell
+uv run --env-file .env python -m ubas_backend.agent_scraper.catalog
+```
+
+Скрипт засевает направления и DEMO-визовые правила, помеченные источником
+`DEMO seed data`; перед продакшеном подтвердите их актуальными источниками.
+Демонстрационный поиск без очереди и БД: `uv run python -m ubas_backend.agent_scraper`.
