@@ -63,6 +63,7 @@ UBAS подбирает перелёты A → B → C с туристическ
 | `routing/scoring.py`, `selection.py` | Рейтинг, дедупликация и выбор результатов |
 | `routing/planner.py`, `diagnostics.py` | Координация поиска и его статистика |
 | `routing/storage.py`, `catalog_models.py` | SQLite-каталог на SQLAlchemy |
+| `agent_scraper/` | Модуль скрапера agent.ru (Playwright + Redis-кэш); точка входа `python -m ubas_backend.agent_scraper` |
 | `tests/` | Регрессионные проверки, включая опциональный PostgreSQL |
 
 ## Работа с БД: обязательные требования
