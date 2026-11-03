@@ -6,6 +6,7 @@ import io
 import unittest
 from datetime import timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
 from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.demo import main as demo
@@ -14,6 +15,7 @@ from ubas_backend.routing.offers import TicketSearch, build_queries
 from ubas_backend.routing.schemas import Money, PlanResult, RouteRequest
 from ubas_backend.routing.scoring import WeightedScorer
 from ubas_backend.routing.validation import OfferRejection, offer_rejection
+from ubas_backend.runtime import _load_provider
 
 
 class RoutingTests(unittest.IsolatedAsyncioTestCase):
@@ -67,6 +69,38 @@ class RoutingTests(unittest.IsolatedAsyncioTestCase):
             offer_rejection(no_baggage, query, baggage_request, now),
             OfferRejection.BAGGAGE,
         )
+
+    async def test_demo_worker_factory_refreshes_expired_quotes(self):
+        provider = _load_provider("ubas_backend.routing.demo:create_flight_provider")
+        query = next(query for query in self.queries if query.stopover_city)
+        first_time = self.result.generated_at
+        later = first_time + timedelta(minutes=21)
+        with patch("ubas_backend.routing.demo.datetime") as clock:
+            clock.now.side_effect = [first_time, later]
+            first = await provider.search(query)
+            refreshed = await provider.search(query)
+        self.assertEqual(len(first.offers), 1)
+        self.assertEqual(len(refreshed.offers), 1)
+        self.assertLess(first.offers[0].expires_at, later)
+        self.assertGreater(refreshed.offers[0].expires_at, later)
+        self.assertEqual(refreshed.offers[0].fetched_at, later)
+        self.assertEqual(refreshed.warnings, ("synthetic_demo_data",))
+
+    async def test_demo_worker_factory_does_not_invent_unsupported_offers(self):
+        provider = _load_provider("ubas_backend.routing.demo:create_flight_provider")
+        query = next(query for query in self.queries if query.stopover_city)
+        for update in (
+            {"currency": "USD"},
+            {"passengers": 2},
+            {"destination": "SIN"},
+            {
+                "departure_from": self.request.date_to + timedelta(days=1),
+                "departure_to": self.request.date_to + timedelta(days=2),
+            },
+        ):
+            response = await provider.search(query.model_copy(update=update))
+            self.assertEqual(response.offers, ())
+            self.assertIn("synthetic_demo_data", response.warnings)
 
     async def test_equivalent_currencies_have_equivalent_scores(self):
         config = PlannerConfig(price_references={"RUB": 60000.0, "USD": 600.0})

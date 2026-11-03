@@ -1,0 +1,83 @@
+name: ubas-backend
+
+x-database-environment: &database-environment
+  POSTGRES_DB: ${POSTGRES_DB:-ubas}
+  POSTGRES_USER: ${POSTGRES_USER:-ubas}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+
+x-application: &application
+  build:
+    context: .
+  image: ubas-backend:local
+  init: true
+  restart: unless-stopped
+  stop_grace_period: 30s
+  environment: &application-environment
+    <<: *database-environment
+    UBAS_EMBEDDED_WORKER: "false"
+    # API persists this limit when submitting a job; workers honor that value.
+    UBAS_WORKER_MAX_ATTEMPTS: ${UBAS_WORKER_MAX_ATTEMPTS:-3}
+    UBAS_PLANNER_CONFIG_PATH:
+  volumes:
+    - ./var:/app/var:ro
+
+services:
+  postgres:
+    image: postgres:18-bookworm
+    restart: unless-stopped
+    environment: *database-environment
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  api:
+    <<: *application
+    environment:
+      <<: *application-environment
+      UBAS_CORS_ORIGINS: ${UBAS_CORS_ORIGINS-http://localhost:5173,http://127.0.0.1:5173}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${UBAS_HTTP_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=2).close()
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  worker:
+    <<: *application
+    profiles: [worker]
+    command: [ubas-worker]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    environment:
+      <<: *application-environment
+      UBAS_CATALOG_PATH: ${UBAS_CATALOG_PATH:-./var/catalog.sqlite3}
+      UBAS_FLIGHT_PROVIDER_FACTORY: ${UBAS_FLIGHT_PROVIDER_FACTORY:-}
+      UBAS_WORKER_CONCURRENCY: ${UBAS_WORKER_CONCURRENCY:-2}
+      UBAS_WORKER_POLL_INTERVAL: ${UBAS_WORKER_POLL_INTERVAL:-1}
+      UBAS_WORKER_LEASE_SECONDS: ${UBAS_WORKER_LEASE_SECONDS:-90}
+      UBAS_WORKER_RETRY_SECONDS: ${UBAS_WORKER_RETRY_SECONDS:-5}
+      UBAS_WORKER_TIMEOUT_SECONDS: ${UBAS_WORKER_TIMEOUT_SECONDS:-300}
+
+volumes:
+  postgres_data:

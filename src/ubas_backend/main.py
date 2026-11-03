@@ -5,10 +5,11 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from ubas_backend.api.router import router
 from ubas_backend.runtime import Runtime, create_runtime
-from ubas_backend.settings import Settings
+from ubas_backend.settings import Settings, load_cors_origins
 
 
 @asynccontextmanager
@@ -26,8 +27,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await runtime.close()
 
 
-def create_app() -> FastAPI:
+def create_app(*, cors_origins: tuple[str, ...] | None = None) -> FastAPI:
     app = FastAPI(title="UBAS Backend", lifespan=lifespan)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=load_cors_origins() if cors_origins is None else cors_origins,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "Idempotency-Key"],
+        expose_headers=["Location", "Retry-After"],
+    )
     app.include_router(router, prefix="/api/v1")
     return app
 
