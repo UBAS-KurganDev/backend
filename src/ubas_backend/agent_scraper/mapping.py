@@ -15,6 +15,8 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from pydantic import ValidationError
+
 from ubas_backend.agent_scraper.airports import airport_for_code
 from ubas_backend.routing.schemas import (
     Airport,
@@ -111,6 +113,32 @@ def _segments(offer: dict[str, Any], fallback_carrier: str) -> Iterator[FlightSe
         )
 
 
+def _itineraries(
+    segments: tuple[FlightSegment, ...],
+) -> Iterator[tuple[FlightSegment, ...]]:
+    """agent.ru складывает рейсы дня в один offer; выделяем отдельные маршруты.
+
+    Сегмент продолжает предыдущий маршрут, только если вылетает из города
+    его прибытия и позже прилёта (стыковка); иначе начинается новый маршрут.
+    Контракт TicketOffer допускает не более двух сегментов.
+    """
+    current: list[FlightSegment] = []
+    for segment in segments:
+        if current:
+            last = current[-1]
+            connects = (
+                len(current) < 2
+                and last.destination.city_code == segment.origin.city_code
+                and segment.departure_at > last.arrival_at
+            )
+            if not connects:
+                yield tuple(current)
+                current = []
+        current.append(segment)
+    if current:
+        yield tuple(current)
+
+
 def map_group(
     group: dict[str, Any], *, now: datetime, passengers: int, currency: str
 ) -> Iterator[TicketOffer]:
@@ -135,16 +163,20 @@ def map_group(
         )
         if price is None:
             continue
-        yield TicketOffer(
-            provider=PROVIDER_NAME,
-            offer_id=f"{carrier}:{index}:{len(segments)}",
-            segments=segments,
-            total_price=price,
-            passengers=passengers,
-            checked_baggage_included=None,
-            fetched_at=now,
-            expires_at=now + _OFFER_TTL,
-        )
+        for itinerary in _itineraries(segments):
+            try:
+                yield TicketOffer(
+                    provider=PROVIDER_NAME,
+                    offer_id=f"{carrier}:{index}:{len(itinerary)}",
+                    segments=itinerary,
+                    total_price=price,
+                    passengers=passengers,
+                    checked_baggage_included=None,
+                    fetched_at=now,
+                    expires_at=now + _OFFER_TTL,
+                )
+            except ValidationError:
+                continue
 
 
 def map_response(
