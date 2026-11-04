@@ -4,7 +4,7 @@ import asyncio
 
 from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.diagnostics import SearchDiagnostics
-from ubas_backend.routing.ports import TopologyRepository
+from ubas_backend.routing.ports import PathTopologyRepository, TopologyRepository
 from ubas_backend.routing.schemas import RouteRequest
 
 
@@ -14,6 +14,14 @@ async def discover_cities(
     config: PlannerConfig,
     diagnostics: SearchDiagnostics,
 ) -> tuple[str, ...]:
+    if isinstance(topology, PathTopologyRepository):
+        candidates = await topology.cities_on_paths(
+            request.origin, request.destination, max_segments=4
+        )
+        eligible = sorted(set(candidates) - {request.origin, request.destination})
+        if len(eligible) > config.max_hubs:
+            diagnostics.partial("topology_city_limit")
+        return (request.origin, request.destination, *eligible[: config.max_hubs])
     # Up to three intermediate cities. Destination is also expanded: cycles are
     # permitted by the specification, and the segment limit guarantees termination.
     seen = {request.origin}

@@ -34,6 +34,15 @@ class TopologyRepository(Protocol):
         ...
 
 
+@runtime_checkable
+class PathTopologyRepository(Protocol):
+    async def cities_on_paths(
+        self, origin: str, destination: str, max_segments: int
+    ) -> tuple[str, ...]:
+        """All possible intermediate cities within the hop budget and coverage."""
+        ...
+
+
 class CityRepository(Protocol):
     async def get_many(self, city_codes: tuple[str, ...]) -> tuple[CityProfile, ...]:
         """Omit unavailable profiles; missing tourism scores become zero."""

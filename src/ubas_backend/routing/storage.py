@@ -5,13 +5,14 @@ import json
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import URL, Engine, create_engine, select
+from sqlalchemy import URL, Engine, create_engine, delete, select
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import NullPool
 
 from ubas_backend.routing.catalog_models import CatalogBase, CityRow, FlightLinkRow
 from ubas_backend.routing.schemas import CityProfile, Code, Model
+from ubas_backend.routing.topology import cities_on_paths
 
 
 class FlightLink(Model):
@@ -59,6 +60,35 @@ class SqliteCatalog:
                     .on_conflict_do_nothing()
                 )
 
+    def replace_topology(self, data: CatalogData, origins: tuple[str, ...]) -> None:
+        """Replace only covered origins atomically; preserve existing city profiles."""
+        covered = set(origins)
+        if not covered or any(link.origin not in covered for link in data.links):
+            raise ValueError("Every imported link must belong to the covered origins")
+        if any(link.origin == link.destination for link in data.links):
+            raise ValueError("City self-loops are not supported")
+        with Session(self._engine) as session, session.begin():
+            for city in data.cities:
+                session.execute(
+                    insert(CityRow)
+                    .values(
+                        city_code=city.city_code, profile_json=city.model_dump_json()
+                    )
+                    .on_conflict_do_nothing()
+                )
+            for offset in range(0, len(origins), 500):
+                session.execute(
+                    delete(FlightLinkRow).where(
+                        FlightLinkRow.origin.in_(origins[offset : offset + 500])
+                    )
+                )
+            for link in data.links:
+                session.execute(
+                    insert(FlightLinkRow)
+                    .values(origin=link.origin, destination=link.destination)
+                    .on_conflict_do_nothing()
+                )
+
 
 def _read_engine(path: Path) -> Engine:
     path = path.resolve()
@@ -80,6 +110,23 @@ class SqliteTopologyRepository:
 
     def close(self) -> None:
         self._engine.dispose()
+
+    async def cities_on_paths(
+        self, origin: str, destination: str, max_segments: int
+    ) -> tuple[str, ...]:
+        def read() -> tuple[str, ...]:
+            with Session(self._engine) as session:
+                rows = session.execute(
+                    select(FlightLinkRow.origin, FlightLinkRow.destination)
+                )
+                return cities_on_paths(
+                    ((first, last) for first, last in rows),
+                    origin,
+                    destination,
+                    max_segments,
+                )
+
+        return await asyncio.to_thread(read)
 
     async def destinations(self, origins: tuple[str, ...]) -> tuple[str, ...]:
         def read() -> tuple[str, ...]:
