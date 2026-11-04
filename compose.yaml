@@ -18,6 +18,8 @@ x-application: &application
     # API persists this limit when submitting a job; workers honor that value.
     UBAS_WORKER_MAX_ATTEMPTS: ${UBAS_WORKER_MAX_ATTEMPTS:-3}
     UBAS_PLANNER_CONFIG_PATH:
+    # API also needs origin geography to validate local dates before enqueueing.
+    UBAS_CATALOG_PATH: ${UBAS_CATALOG_PATH:-./var/catalog.sqlite3}
   volumes:
     - ./var:/app/var:ro
 
@@ -71,7 +73,6 @@ services:
         condition: service_healthy
     environment:
       <<: *application-environment
-      UBAS_CATALOG_PATH: ${UBAS_CATALOG_PATH:-./var/catalog.sqlite3}
       UBAS_FLIGHT_PROVIDER_FACTORY: ${UBAS_FLIGHT_PROVIDER_FACTORY:-}
       UBAS_WORKER_CONCURRENCY: ${UBAS_WORKER_CONCURRENCY:-2}
       UBAS_WORKER_POLL_INTERVAL: ${UBAS_WORKER_POLL_INTERVAL:-1}

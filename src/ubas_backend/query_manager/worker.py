@@ -8,6 +8,7 @@ from typing import Protocol
 
 from ubas_backend.query_manager.ports import ClaimedQuery, QueryRepository
 from ubas_backend.query_manager.schemas import QueryFailure, QueryResult
+from ubas_backend.routing.planner import IncompleteSearchError
 from ubas_backend.routing.policy import InvalidRouteRequest
 from ubas_backend.routing.schemas import PlanResult, RouteRequest
 
@@ -129,11 +130,23 @@ class QueryWorker:
         try:
             async with asyncio.timeout(self._execution_timeout):
                 result = await self._planner.plan(claimed.request)
+                if not result.complete:
+                    raise IncompleteSearchError(result.warnings)
         except InvalidRouteRequest as error:
             await self._repository.fail(
                 claimed.query_id,
                 claimed.lease_token,
                 QueryFailure(code="invalid_request", message=str(error)),
+                None,
+            )
+        except IncompleteSearchError as error:
+            await self._repository.fail(
+                claimed.query_id,
+                claimed.lease_token,
+                QueryFailure(
+                    code="search_incomplete",
+                    message="Search could not finish: " + ", ".join(error.warnings),
+                ),
                 None,
             )
         except Exception:

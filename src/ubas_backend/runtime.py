@@ -3,6 +3,7 @@
 import importlib
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
+from pathlib import Path
 from typing import cast
 
 from ubas_backend.database import create_query_engine, create_sessions
@@ -12,7 +13,11 @@ from ubas_backend.query_manager.worker import QueryWorker
 from ubas_backend.routing.planner import RoutePlanner
 from ubas_backend.routing.policy import RequestPolicy
 from ubas_backend.routing.ports import AsyncCloseable, FlightProvider
-from ubas_backend.routing.storage import SqliteCatalog
+from ubas_backend.routing.storage import (
+    SqliteCityRepository,
+    SqliteGeographyRepository,
+    SqliteTopologyRepository,
+)
 from ubas_backend.settings import Settings
 
 
@@ -29,6 +34,28 @@ def _load_provider(target: str) -> FlightProvider:
     if not callable(getattr(provider, "search", None)):
         raise RuntimeError("Flight provider must implement search(FlightQuery)")
     return cast("FlightProvider", provider)
+
+
+def create_planner(settings: Settings, resources: AsyncExitStack) -> RoutePlanner:
+    """Choose concrete repositories here; the planner depends only on protocols."""
+    provider = _load_provider(settings.flight_provider_factory)
+    if isinstance(provider, AsyncCloseable):
+        resources.push_async_callback(provider.aclose)
+
+    path = settings.catalog_path or Path("var/catalog.sqlite3")
+    topology = SqliteTopologyRepository(path)
+    resources.callback(topology.close)
+    cities = SqliteCityRepository(path)
+    resources.callback(cities.close)
+    geography = SqliteGeographyRepository(path)
+    resources.callback(geography.close)
+    return RoutePlanner(
+        flights=provider,
+        topology=topology,
+        cities=cities,
+        config=settings.planner_config,
+        geography=geography,
+    )
 
 
 @dataclass
@@ -53,21 +80,16 @@ async def create_runtime(settings: Settings, *, include_worker: bool) -> Runtime
             lease_duration=settings.worker_lease_duration,
             max_attempts=settings.worker_max_attempts,
         )
-        manager = QueryManager(repository, RequestPolicy(settings.planner_config))
+        geography = SqliteGeographyRepository(
+            settings.catalog_path or Path("var/catalog.sqlite3")
+        )
+        resources.callback(geography.close)
+        manager = QueryManager(
+            repository, RequestPolicy(settings.planner_config), geography
+        )
         worker = None
         if include_worker:
-            if settings.catalog_path is None or not settings.catalog_path.is_file():
-                raise RuntimeError(
-                    f"Catalog database does not exist: {settings.catalog_path}"
-                )
-            provider = _load_provider(settings.flight_provider_factory)
-            if isinstance(provider, AsyncCloseable):
-                resources.push_async_callback(provider.aclose)
-            catalog = SqliteCatalog(settings.catalog_path)
-            resources.callback(catalog.close)
-            planner = RoutePlanner(
-                provider, catalog, catalog, config=settings.planner_config
-            )
+            planner = create_planner(settings, resources)
             worker = QueryWorker(
                 repository,
                 planner,

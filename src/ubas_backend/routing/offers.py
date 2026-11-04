@@ -1,15 +1,13 @@
-"""Bounded provider searches and chronological ticket combinations."""
+"""Cancellation-safe collection with disjoint adaptive date partitions."""
 
 import asyncio
-from bisect import bisect_left, bisect_right
-from collections.abc import Iterator
+from collections import deque
 from datetime import UTC, datetime, timedelta
 
 from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.diagnostics import SearchDiagnostics
 from ubas_backend.routing.ports import FlightProvider, FlightProviderError
 from ubas_backend.routing.schemas import (
-    CityProfile,
     FlightQuery,
     FlightSearchResult,
     RouteRequest,
@@ -19,62 +17,53 @@ from ubas_backend.routing.validation import OfferRejection, offer_rejection
 
 
 def build_queries(
-    request: RouteRequest, hub: CityProfile, config: PlannerConfig
+    request: RouteRequest,
+    city_codes: tuple[str, ...],
+    config: PlannerConfig,
 ) -> tuple[FlightQuery, ...]:
-    first = FlightQuery(
-        origin=request.origin,
-        destination=hub.city_code,
-        departure_from=request.date_from,
-        departure_to=request.date_to,
-        passengers=request.passengers,
-        currency=request.currency,
-        limit=config.max_offers_per_query,
-        max_stopover_hours=config.max_stopover_hours,
+    pairs = [(request.origin, request.destination)]
+    pairs.extend(
+        (origin, destination)
+        for origin in city_codes
+        for destination in city_codes
+        if origin != destination and (origin, destination) != pairs[0]
     )
-    # Include calendar shifts across time zones; final endpoints are checked later.
-    onward = first.model_copy(
-        update={
-            "origin": hub.city_code,
-            "destination": request.destination,
-            "departure_from": request.date_from - timedelta(days=2),
-            "departure_to": request.date_to + timedelta(days=2),
-        }
-    )
-    queries: tuple[FlightQuery, ...] = (
-        (first, onward) if config.allow_self_transfer else ()
-    )
-    if config.search_through_tickets:
-        queries += (
-            first.model_copy(
-                update={
-                    "destination": request.destination,
-                    "stopover_city": hub.city_code,
-                }
-            ),
+    return tuple(
+        FlightQuery(
+            origin=origin,
+            destination=destination,
+            # An intermediate local date can lie outside the endpoint local window.
+            departure_from=request.date_from - timedelta(days=2),
+            departure_to=request.date_to + timedelta(days=2),
+            passengers=1,
+            currency="RUB",
+            limit=config.max_offers_per_query,
         )
-    return queries
+        for origin, destination in pairs
+    )
+
+
+def bisect_dates(query: FlightQuery) -> tuple[FlightQuery, FlightQuery]:
+    middle = query.departure_from + (query.departure_to - query.departure_from) // 2
+    return (
+        query.model_copy(update={"departure_to": middle}),
+        query.model_copy(update={"departure_from": middle + timedelta(days=1)}),
+    )
 
 
 class TicketSearch:
     def __init__(self, provider: FlightProvider, config: PlannerConfig) -> None:
         self.provider = provider
         self.config = config
-        # Shared across requests in this worker, rather than recreated per plan.
         self._semaphore = asyncio.Semaphore(config.max_concurrent_queries)
 
-    async def _search(self, query: FlightQuery) -> FlightSearchResult:
+    async def _search(self, query: FlightQuery) -> FlightSearchResult | None:
         async with self._semaphore:
             try:
                 async with asyncio.timeout(self.config.query_timeout_seconds):
                     return await self.provider.search(query)
             except FlightProviderError, TimeoutError:
-                return FlightSearchResult(
-                    complete=False,
-                    warnings=(
-                        f"flight_search_failed:{query.origin}:{query.destination}:"
-                        f"{query.stopover_city or 'nonstop'}",
-                    ),
-                )
+                return None
 
     async def collect(
         self,
@@ -83,81 +72,64 @@ class TicketSearch:
         diagnostics: SearchDiagnostics,
         *,
         now: datetime | None = None,
-    ) -> dict[FlightQuery, tuple[TicketOffer, ...]]:
-        async with asyncio.TaskGroup() as group:
-            tasks = {
-                query: group.create_task(self._search(query))
-                for query in dict.fromkeys(queries)
-            }
-        current = now or datetime.now(UTC)
-        offers: dict[FlightQuery, tuple[TicketOffer, ...]] = {}
-        for query, task in tasks.items():
-            response = task.result()
-            diagnostics.warnings.extend(response.warnings)
-            if not response.complete:
-                diagnostics.partial(
-                    f"incomplete_search:{query.origin}:{query.destination}:"
-                    f"{query.stopover_city or 'nonstop'}"
+    ) -> tuple[TicketOffer, ...]:
+        roots = tuple(dict.fromkeys(queries))
+        pending = deque((index, query) for index, query in enumerate(roots))
+        counts = [0] * len(roots)
+        offers: list[TicketOffer] = []
+        calls = 0
+        while pending:
+            remaining = self.config.max_provider_queries - calls
+            if remaining <= 0:
+                diagnostics.partial("provider_query_limit")
+                break
+            batch = [
+                pending.popleft()
+                for _ in range(
+                    min(remaining, len(pending), self.config.max_concurrent_queries)
                 )
-            valid: list[TicketOffer] = []
-            for offer in response.offers:
-                rejection = offer_rejection(offer, query, request, current)
-                if rejection is None:
-                    valid.append(offer)
+            ]
+            calls += len(batch)
+            async with asyncio.TaskGroup() as group:
+                tasks = [group.create_task(self._search(query)) for _, query in batch]
+            for (root, query), task in zip(batch, tasks, strict=True):
+                response = task.result()
+                if response is None:
+                    diagnostics.partial(
+                        f"provider_unavailable:{query.origin}:{query.destination}"
+                    )
                     continue
-                diagnostics.rejected[rejection.value] += 1
-                if rejection is OfferRejection.CONTRACT:
-                    diagnostics.partial("provider_contract_mismatch")
-            valid.sort(key=lambda offer: (offer.total_price.amount, offer.offer_id))
-            if len(valid) > query.limit:
-                diagnostics.partial(f"offer_limit:{query.origin}:{query.destination}")
-            offers[query] = tuple(valid[: query.limit])
-        return offers
-
-
-def _split_combinations(
-    inbound: tuple[TicketOffer, ...],
-    outbound: tuple[TicketOffer, ...],
-    config: PlannerConfig,
-) -> Iterator[tuple[TicketOffer, ...]]:
-    onward = sorted(
-        outbound, key=lambda offer: offer.segments[0].departure_at.astimezone(UTC)
-    )
-    departures = [offer.segments[0].departure_at.astimezone(UTC) for offer in onward]
-    for first in inbound:
-        arrival = first.segments[-1].arrival_at.astimezone(UTC)
-        start = bisect_left(
-            departures, arrival + timedelta(hours=config.min_stopover_hours)
-        )
-        end = bisect_right(
-            departures, arrival + timedelta(hours=config.max_stopover_hours)
-        )
-        for second in onward[start:end]:
-            yield first, second
-
-
-def ticket_combinations(
-    queries: tuple[FlightQuery, ...],
-    offers: dict[FlightQuery, tuple[TicketOffer, ...]],
-    config: PlannerConfig,
-) -> Iterator[tuple[TicketOffer, ...]]:
-    through = next((query for query in queries if query.stopover_city), None)
-    through_offers = iter(offers[through] if through else ())
-    split: Iterator[tuple[TicketOffer, ...]] = iter(())
-    if config.allow_self_transfer:
-        inbound, outbound = (query for query in queries if not query.stopover_city)
-        split = _split_combinations(offers[inbound], offers[outbound], config)
-    through_done = split_done = False
-    while not (through_done and split_done):
-        if not through_done:
-            offer = next(through_offers, None)
-            if offer is None:
-                through_done = True
-            else:
-                yield (offer,)
-        if not split_done:
-            pair = next(split, None)
-            if pair is None:
-                split_done = True
-            else:
-                yield pair
+                diagnostics.warnings.extend(response.warnings)
+                incomplete = not response.complete or len(response.offers) > query.limit
+                if (
+                    incomplete
+                    and self.config.refine_date_ranges
+                    and query.departure_from < query.departure_to
+                ):
+                    # Replace the parent response, do not union it with children:
+                    # repeated transport observations must not manufacture duplicates.
+                    pending.extend((root, child) for child in bisect_dates(query))
+                    continue
+                if incomplete:
+                    diagnostics.partial(
+                        f"incomplete_provider:{query.origin}:{query.destination}"
+                    )
+                current = now or datetime.now(UTC)
+                for offer in response.offers:
+                    rejection = offer_rejection(offer, query, request, current)
+                    if rejection is not None:
+                        diagnostics.rejected[rejection.value] += 1
+                        if rejection is OfferRejection.CONTRACT:
+                            diagnostics.partial("provider_contract_mismatch")
+                        continue
+                    if counts[root] >= self.config.max_offers_per_search:
+                        diagnostics.partial("offers_per_search_limit")
+                        break
+                    if len(offers) >= self.config.max_total_offers:
+                        diagnostics.partial("total_offer_limit")
+                        return tuple(offers)
+                    # Keep all distinct response occurrences, even identical offers.
+                    offers.append(offer)
+                    counts[root] += 1
+            await asyncio.sleep(0)
+        return tuple(offers)

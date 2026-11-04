@@ -1,20 +1,22 @@
-"""Implement these protocols to connect services, storage, or new ranking."""
+"""Replaceable data sources, independent of storage and HTTP."""
 
-from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.schemas import (
     CityProfile,
     FlightQuery,
     FlightSearchResult,
-    RouteCandidate,
-    RouteScore,
+    FlightSegment,
+    VisaExpense,
 )
 
 
 class FlightProviderError(Exception):
-    """Expected upstream failure; adapters translate transport errors here."""
+    """Expected upstream failure; never equivalent to a successful empty search."""
+
+
+class CitySourceError(Exception):
+    """Unavailable tourism source; missing scores fall back to zero."""
 
 
 class FlightProvider(Protocol):
@@ -27,22 +29,32 @@ class AsyncCloseable(Protocol):
 
 
 class TopologyRepository(Protocol):
-    async def connecting_cities(self, origin: str, destination: str) -> tuple[str, ...]:
-        """Intersect outgoing(origin) and incoming(destination), no live prices."""
+    async def destinations(self, origins: tuple[str, ...]) -> tuple[str, ...]:
+        """All outgoing cities for these origins in the agreed coverage."""
         ...
 
 
 class CityRepository(Protocol):
-    async def get_many(
-        self, city_codes: tuple[str, ...]
-    ) -> tuple[CityProfile, ...]: ...
+    async def get_many(self, city_codes: tuple[str, ...]) -> tuple[CityProfile, ...]:
+        """Omit unavailable profiles; missing tourism scores become zero."""
+        ...
 
 
-class RouteScorer(Protocol):
-    def score(self, route: RouteCandidate, config: PlannerConfig) -> RouteScore: ...
+class CityGeography(Protocol):
+    async def timezone(self, city_code: str) -> str | None:
+        """Origin timezone for local date validation, independent of tourism."""
+        ...
 
 
-class DaytimeCalculator(Protocol):
-    def hours(
-        self, start: datetime, end: datetime, timezone: str, config: PlannerConfig
-    ) -> float: ...
+class VisaCostResolver(Protocol):
+    def expenses(
+        self,
+        segments: tuple[FlightSegment, ...],
+        profiles: dict[str, CityProfile],
+    ) -> tuple[VisaExpense, ...]:
+        """Required costs for the WHOLE route, including repeated countries.
+
+        No eligibility checks. None means unknown, not free.
+        Each required charge has a unique key and is counted once.
+        """
+        ...

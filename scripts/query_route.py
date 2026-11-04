@@ -27,15 +27,6 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument("--date-from", type=date.fromisoformat)
     parser.add_argument("--date-to", type=date.fromisoformat)
-    parser.add_argument("--passengers", type=int, default=1)
-    parser.add_argument("--citizenship", default="RU")
-    parser.add_argument("--currency", default="RUB")
-    parser.add_argument(
-        "--budget", help="Общий бюджет билетов и виз для всех пассажиров"
-    )
-    parser.add_argument("--limit", type=int, default=10)
-    parser.add_argument("--exclude-city", action="append", default=[])
-    parser.add_argument("--checked-baggage-required", action="store_true")
     parser.add_argument(
         "--idempotency-key", help="Ключ для повторного создания запроса"
     )
@@ -86,13 +77,6 @@ def submit_query(arguments: argparse.Namespace) -> UUID:
         "destination": arguments.destination,
         "date_from": date_from.isoformat(),
         "date_to": date_to.isoformat(),
-        "citizenship": arguments.citizenship,
-        "passengers": arguments.passengers,
-        "currency": arguments.currency,
-        "budget": arguments.budget,
-        "limit": arguments.limit,
-        "excluded_cities": arguments.exclude_city,
-        "checked_baggage_required": arguments.checked_baggage_required,
     }
     key = arguments.idempotency_key or str(uuid4())
     print(f"Idempotency-Key: {key}", file=sys.stderr)

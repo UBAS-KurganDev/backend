@@ -1,11 +1,13 @@
 """SQLite catalog backed by SQLAlchemy; synchronous I/O runs off the event loop."""
 
 import asyncio
+import json
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import URL, create_engine, select
+from sqlalchemy import URL, Engine, create_engine, select
 from sqlalchemy.dialects.sqlite import insert
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy.orm import Session
 from sqlalchemy.pool import NullPool
 
 from ubas_backend.routing.catalog_models import CatalogBase, CityRow, FlightLinkRow
@@ -23,6 +25,8 @@ class CatalogData(Model):
 
 
 class SqliteCatalog:
+    """Catalog administration only; planner reads use independent repositories."""
+
     def __init__(self, path: Path) -> None:
         self.path = path.resolve()
         self._engine = create_engine(
@@ -55,20 +59,48 @@ class SqliteCatalog:
                     .on_conflict_do_nothing()
                 )
 
-    async def connecting_cities(self, origin: str, destination: str) -> tuple[str, ...]:
+
+def _read_engine(path: Path) -> Engine:
+    path = path.resolve()
+    if not path.is_file():
+        raise RuntimeError(f"Catalog database does not exist: {path}")
+    return create_engine(
+        URL.create(
+            "sqlite+pysqlite",
+            database=path.as_uri(),
+            query={"mode": "ro", "uri": "true"},
+        ),
+        poolclass=NullPool,
+    )
+
+
+class SqliteTopologyRepository:
+    def __init__(self, path: Path) -> None:
+        self._engine = _read_engine(path)
+
+    def close(self) -> None:
+        self._engine.dispose()
+
+    async def destinations(self, origins: tuple[str, ...]) -> tuple[str, ...]:
         def read() -> tuple[str, ...]:
-            outgoing = aliased(FlightLinkRow)
-            incoming = aliased(FlightLinkRow)
             statement = (
-                select(outgoing.destination)
-                .join(incoming, incoming.origin == outgoing.destination)
-                .where(outgoing.origin == origin, incoming.destination == destination)
-                .order_by(outgoing.destination)
+                select(FlightLinkRow.destination)
+                .distinct()
+                .where(FlightLinkRow.origin.in_(origins))
+                .order_by(FlightLinkRow.destination)
             )
             with Session(self._engine) as session:
                 return tuple(session.scalars(statement))
 
         return await asyncio.to_thread(read)
+
+
+class SqliteCityRepository:
+    def __init__(self, path: Path) -> None:
+        self._engine = _read_engine(path)
+
+    def close(self) -> None:
+        self._engine.dispose()
 
     async def get_many(self, city_codes: tuple[str, ...]) -> tuple[CityProfile, ...]:
         def read() -> tuple[CityProfile, ...]:
@@ -81,9 +113,38 @@ class SqliteCatalog:
                         .where(CityRow.city_code.in_(batch))
                         .order_by(CityRow.city_code)
                     )
-                    result.extend(
-                        CityProfile.model_validate_json(item) for item in profiles
-                    )
+                    for item in profiles:
+                        data = json.loads(item)
+                        # Old catalog JSON used a 0..1 scale; normalize at the boundary.
+                        if "profile_version" not in data:
+                            data["tourism_score"] *= 100
+                        result.append(CityProfile.model_validate(data))
             return tuple(result)
+
+        return await asyncio.to_thread(read)
+
+
+class SqliteGeographyRepository:
+    """Read stable geography even if tourism fields are absent or unavailable."""
+
+    def __init__(self, path: Path) -> None:
+        self._engine = _read_engine(path)
+
+    def close(self) -> None:
+        self._engine.dispose()
+
+    async def timezone(self, city_code: str) -> str | None:
+        def read() -> str | None:
+            with Session(self._engine) as session:
+                raw = session.scalar(
+                    select(CityRow.profile_json).where(CityRow.city_code == city_code)
+                )
+                if raw is None:
+                    return None
+                value = json.loads(raw).get("timezone")
+                if not isinstance(value, str):
+                    return None
+                ZoneInfo(value)
+                return value
 
         return await asyncio.to_thread(read)

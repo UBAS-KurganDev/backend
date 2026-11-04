@@ -15,7 +15,7 @@ from ubas_backend.query_manager.schemas import (
 )
 from ubas_backend.query_manager.service import QueryManager
 from ubas_backend.routing.policy import InvalidRouteRequest
-from ubas_backend.routing.schemas import RouteRequest
+from ubas_backend.routing.schemas import RouteInput, RouteRequest
 
 router = APIRouter(prefix="/queries", tags=["queries"])
 
@@ -31,7 +31,7 @@ QueryManagerDep = Annotated[QueryManager, Depends(get_query_manager)]
     "", response_model=SubmitQueryResponse, status_code=status.HTTP_202_ACCEPTED
 )
 async def create_query(
-    query: RouteRequest,
+    query: RouteInput,
     query_manager: QueryManagerDep,
     response: Response,
     idempotency_key: Annotated[
@@ -40,7 +40,15 @@ async def create_query(
 ) -> SubmitQueryResponse:
     try:
         result = await query_manager.submit_query(
-            SubmitQueryRequest(request=query, idempotency_key=idempotency_key)
+            SubmitQueryRequest(
+                request=RouteRequest(
+                    origin=query.origin,
+                    destination=query.destination,
+                    date_from=query.date_from,
+                    date_to=query.date_to,
+                ),
+                idempotency_key=idempotency_key,
+            )
         )
     except IdempotencyConflictError as error:
         raise HTTPException(
