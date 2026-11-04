@@ -1,70 +1,61 @@
-from collections.abc import Callable, Coroutine
-from typing import Any
+"""Single-flight source searches with bounded concurrency and cancellation."""
 
-from loguru import logger
+import asyncio
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
 
 from ubas_backend.agent_scraper.cache import ResponseCache
-from ubas_backend.agent_scraper.models import SearchRequest
+from ubas_backend.agent_scraper.config import Settings
+from ubas_backend.agent_scraper.models import CapturedOffers, SearchRequest
 from ubas_backend.agent_scraper.scraper_agent import run_agent_scraper
 
-ResponseHandler = Callable[
-    [SearchRequest, str, dict[str, Any]], Coroutine[Any, Any, None]
-]
+type Scrape = Callable[[SearchRequest, Settings], Awaitable[CapturedOffers]]
+
+
+@dataclass
+class _Flight:
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    users: int = 0
+    result: CapturedOffers | None = None
 
 
 class FlightSearchService:
-    """Сервис поиска билетов.
+    def __init__(
+        self,
+        *,
+        settings: Settings | None = None,
+        cache: ResponseCache | None = None,
+        scrape: Scrape = run_agent_scraper,
+    ) -> None:
+        self.settings = settings or Settings()
+        self.cache = cache or ResponseCache(self.settings)
+        self._scrape = scrape
+        self._semaphore = asyncio.Semaphore(self.settings.max_concurrency)
+        self._flights: dict[str, _Flight] = {}
 
-    Логика:
-      1. Проверяем Redis-кэш по ключу запроса (направление + дата + класс + пассажиры).
-      2. Если есть закешированный ответ — возвращаем его, скрапер не запускаем.
-      3. Если кэш пуст — запускаем скрапер, перехваченные ответы идут сразу в кэш.
-    """
-
-    def __init__(self, cache: ResponseCache | None = None) -> None:
-        self.cache = cache or ResponseCache()
-
-    async def get_offers(
-        self, request: SearchRequest, refresh: bool = False
-    ) -> dict[str, Any]:
+    async def get_offers(self, request: SearchRequest) -> CapturedOffers:
         key = request.cache_key
+        # No await between acquiring the shared entry and incrementing its users.
+        flight = self._flights.setdefault(key, _Flight())
+        flight.users += 1
+        try:
+            async with flight.lock:
+                if flight.result is not None:
+                    return flight.result
+                cached = await self.cache.get(key)
+                if cached is not None:
+                    flight.result = cached
+                    return cached
+                async with self._semaphore:
+                    result = await self._scrape(request, self.settings)
+                await self.cache.set(key, result)
+                flight.result = result
+                return result
+        finally:
+            flight.users -= 1
+            if flight.users == 0:
+                del self._flights[key]
 
-        if not refresh:
-            cached = self.cache.get(key)
-            if cached is not None:
-                logger.info("Найден кэш: {key}", key=key)
-                return dict(cached)
-            logger.info("Кэш пуст: {key} — запускаем скрапер...", key=key)
-
-        return await self._scrape_and_cache(request)
-
-    async def _scrape_and_cache(self, request: SearchRequest) -> dict[str, Any]:
-        ready: dict[str, Any] | None = None
-
-        async def on_response(
-            req: SearchRequest, url: str, data: dict[str, Any] | list[Any]
-        ) -> None:
-            nonlocal ready
-            if isinstance(data, dict):
-                ready = data
-
-        await run_agent_scraper(request, on_response=on_response)
-
-        if not ready:
-            logger.info(
-                "Скрапер не перехватил ни одного завершённого ответа —"
-                " кэшировать нечего."
-            )
-            return {}
-
-        self.cache.set(request.cache_key, ready)
-        logger.info(
-            "Завершённый offers сохранён по ключу: {key}", key=request.cache_key
-        )
-        return ready
-
-
-async def get_flights(request: SearchRequest, refresh: bool = False) -> dict[str, Any]:
-    """Точка входа для вызова поиска (можно использовать из main / API)."""
-    service = FlightSearchService()
-    return await service.get_offers(request, refresh=refresh)
+    async def aclose(self) -> None:
+        # Runtime stops workers (and their searches) before closing the provider.
+        await self.cache.aclose()

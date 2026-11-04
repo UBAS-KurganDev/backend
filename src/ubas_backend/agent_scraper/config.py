@@ -1,42 +1,17 @@
-import pathlib
+"""Scraper settings; environment is supplied by the launcher, not read on import."""
 
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
+    model_config = SettingsConfigDict(env_prefix="UBAS_AGENT_", extra="ignore")
 
-    headless_mode: bool = False
-
-    redis_host: str = "localhost"
-    redis_port: int = 6379
-    redis_db: int = 0
-    redis_password: str | None = None
-
-    cache_ttl_seconds: int = 2 * 24 * 60 * 60
-
-    base_dir: pathlib.Path = pathlib.Path(__file__).resolve().parent
-
-    @property
-    def captured_dir(self) -> pathlib.Path:
-        return self.base_dir / "captured_data"
-
-    @property
-    def user_data_dir(self) -> pathlib.Path:
-        return self.base_dir / "browser_user_data"
-
-    @property
-    def export_dir(self) -> pathlib.Path:
-        return self.base_dir / "exported_reports"
-
-    def ensure_dirs(self) -> None:
-        for directory in (self.captured_dir, self.user_data_dir, self.export_dir):
-            directory.mkdir(exist_ok=True)
-
-
-settings = Settings()
-settings.ensure_dirs()
+    headless: bool = True
+    redis_url: SecretStr | None = None
+    # Operational cache retention, not a promise that a fare is still available.
+    cache_ttl_seconds: int = Field(default=1800, ge=1, le=172800)
+    cache_max_entries: int = Field(default=128, ge=1, le=10000)
+    max_concurrency: int = Field(default=2, ge=1, le=16)
+    timeout_seconds: float = Field(default=60, gt=0, le=180)
+    max_response_batches: int = Field(default=100, ge=1, le=1000)

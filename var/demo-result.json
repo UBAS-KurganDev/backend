@@ -1,375 +1,374 @@
 {
-  "query_id": "39e1b326-cd65-4963-a22f-f6f158fb6658",
-  "result": {
-    "routes": [
-      {
-        "route": {
-          "id": "5403eeb2a14fd360bba1b57c",
-          "tickets": [
-            {
-              "provider": "synthetic-demo",
-              "offer_id": "through",
-              "segments": [
-                {
-                  "origin": {
-                    "code": "SVO",
-                    "city_code": "MOW",
-                    "timezone": "Europe/Moscow"
-                  },
-                  "destination": {
-                    "code": "ALA",
-                    "city_code": "ALA",
-                    "timezone": "Asia/Almaty"
-                  },
-                  "departure_at": "2026-11-06T01:00:00Z",
-                  "arrival_at": "2026-11-06T05:00:00Z",
-                  "marketing_carrier": "XX",
-                  "operating_carrier": "XX",
-                  "flight_number": "101"
-                },
-                {
-                  "origin": {
-                    "code": "ALA",
-                    "city_code": "ALA",
-                    "timezone": "Asia/Almaty"
-                  },
-                  "destination": {
-                    "code": "NRT",
-                    "city_code": "TYO",
-                    "timezone": "Asia/Tokyo"
-                  },
-                  "departure_at": "2026-11-07T15:00:00Z",
-                  "arrival_at": "2026-11-07T22:00:00Z",
-                  "marketing_carrier": "XX",
-                  "operating_carrier": "XX",
-                  "flight_number": "202"
-                }
-              ],
-              "total_price": {
-                "amount": "42000",
-                "currency": "RUB"
-              },
-              "passengers": 1,
-              "cabin": "economy",
-              "checked_baggage_included": true,
-              "protected_connection": true,
-              "booking_url": null,
-              "fetched_at": "2026-10-23T12:03:37.659288Z",
-              "expires_at": "2026-10-23T12:23:37.659288Z"
-            }
-          ],
-          "stopover": {
-            "city_code": "ALA",
-            "name": "Алматы (демонстрационные данные)",
-            "country_code": "KZ",
-            "timezone": "Asia/Almaty",
-            "tourism_score": 0.85,
-            "minimum_visit_hours": 3.0,
-            "rewarding_visit_hours": 20.0,
-            "hotel_per_night": {
-              "amount": "5000",
-              "currency": "RUB"
-            },
-            "visas": [
+  "schema_version": 2,
+  "routes": [
+    {
+      "route": {
+        "id": "0a32a052b105dd9b66462d95",
+        "kind": "direct",
+        "tickets": [
+          {
+            "provider": "synthetic-demo",
+            "offer_id": "direct",
+            "segments": [
               {
-                "citizenship": "RU",
-                "status": "allowed",
-                "kind": "visa_free",
-                "fee_per_person": {
-                  "amount": "0",
-                  "currency": "RUB"
+                "origin": {
+                  "code": "SVO",
+                  "city_code": "MOW",
+                  "timezone": "Europe/Moscow"
                 },
-                "ease": 1.0,
-                "processing_days": 0,
-                "max_stay_hours": 72.0,
-                "verified_at": "2026-10-23",
-                "valid_until": "2027-01-21",
-                "source": "SYNTHETIC DEMO: not actual immigration advice"
+                "destination": {
+                  "code": "NRT",
+                  "city_code": "TYO",
+                  "timezone": "Asia/Tokyo"
+                },
+                "departure_at": "2026-11-18T01:00:00Z",
+                "arrival_at": "2026-11-18T10:00:00Z",
+                "marketing_carrier": "XX",
+                "operating_carrier": "XX",
+                "flight_number": "303"
               }
-            ]
-          },
-          "visa": {
-            "citizenship": "RU",
-            "status": "allowed",
-            "kind": "visa_free",
-            "fee_per_person": {
-              "amount": "0",
+            ],
+            "total_price": {
+              "amount": "30000",
               "currency": "RUB"
             },
-            "ease": 1.0,
-            "processing_days": 0,
-            "max_stay_hours": 72.0,
-            "verified_at": "2026-10-23",
-            "valid_until": "2027-01-21",
-            "source": "SYNTHETIC DEMO: not actual immigration advice"
-          },
-          "ticket_cost": {
-            "amount": "42000",
-            "currency": "RUB"
-          },
-          "visa_cost": {
-            "amount": "0",
-            "currency": "RUB"
-          },
-          "total_cost": {
-            "amount": "42000",
-            "currency": "RUB"
-          },
-          "metrics": {
-            "stopover_hours": 34.0,
-            "available_hours": 30.0,
-            "daytime_hours": 20.0,
-            "nighttime_hours": 10.0,
-            "daytime_fraction": 0.6666666666666666,
-            "total_trip_hours": 45.0,
-            "airport_change": false,
-            "self_transfer": false
-          },
-          "warnings": [
-            "hotel_and_ground_transport_not_included",
-            "recheck_fares_and_entry"
-          ]
+            "unknown_costs": [],
+            "passengers": 1,
+            "cabin": "economy",
+            "checked_baggage_included": true,
+            "baggage_description": "Synthetic fare: one checked bag included",
+            "protected_connection": false,
+            "fetched_at": "2026-11-04T09:42:48.470518Z",
+            "expires_at": "2026-11-04T10:02:48.470518Z"
+          }
+        ],
+        "stopovers": [],
+        "costs": [
+          {
+            "key": "ticket:0",
+            "kind": "ticket",
+            "original": {
+              "amount": "30000",
+              "currency": "RUB"
+            },
+            "rub_amount": "30000.00",
+            "unknown_reason": null
+          }
+        ],
+        "full_cost_known": true,
+        "unknown_costs": [],
+        "total_trip_hours": 9.0,
+        "stopover": null,
+        "visa": null,
+        "ticket_cost": {
+          "amount": "30000.00",
+          "currency": "RUB"
         },
-        "score": {
-          "total": 72.85633484162896,
-          "components": [
-            {
-              "name": "price",
-              "value": 0.5882352941176471,
-              "weight": 0.4,
-              "contribution": 23.529411764705884
-            },
-            {
-              "name": "tourism",
-              "value": 0.85,
-              "weight": 0.25,
-              "contribution": 21.25
-            },
-            {
-              "name": "daytime",
-              "value": 0.6666666666666666,
-              "weight": 0.15,
-              "contribution": 9.999999999999998
-            },
-            {
-              "name": "visa",
-              "value": 1.0,
-              "weight": 0.1,
-              "contribution": 10.0
-            },
-            {
-              "name": "duration",
-              "value": 0.6153846153846154,
-              "weight": 0.05,
-              "contribution": 3.076923076923077
-            },
-            {
-              "name": "protection",
-              "value": 1.0,
-              "weight": 0.05,
-              "contribution": 5.0
-            }
-          ]
-        }
+        "visa_cost": {
+          "amount": "0",
+          "currency": "RUB"
+        },
+        "total_cost": {
+          "amount": "30000.00",
+          "currency": "RUB"
+        },
+        "metrics": null,
+        "warnings": [
+          "hotel_and_ground_transport_not_included"
+        ]
       },
-      {
-        "route": {
-          "id": "f29ee203640e7384c84d5fad",
-          "tickets": [
-            {
-              "provider": "synthetic-demo",
-              "offer_id": "outbound",
-              "segments": [
-                {
-                  "origin": {
-                    "code": "SVO",
-                    "city_code": "MOW",
-                    "timezone": "Europe/Moscow"
-                  },
-                  "destination": {
-                    "code": "ALA",
-                    "city_code": "ALA",
-                    "timezone": "Asia/Almaty"
-                  },
-                  "departure_at": "2026-11-06T01:00:00Z",
-                  "arrival_at": "2026-11-06T05:00:00Z",
-                  "marketing_carrier": "XX",
-                  "operating_carrier": "XX",
-                  "flight_number": "101"
-                }
-              ],
-              "total_price": {
-                "amount": "12000",
-                "currency": "RUB"
-              },
-              "passengers": 1,
-              "cabin": "economy",
-              "checked_baggage_included": true,
-              "protected_connection": false,
-              "booking_url": null,
-              "fetched_at": "2026-10-23T12:03:37.659062Z",
-              "expires_at": "2026-10-23T12:23:37.659062Z"
-            },
-            {
-              "provider": "synthetic-demo",
-              "offer_id": "onward",
-              "segments": [
-                {
-                  "origin": {
-                    "code": "ALA",
-                    "city_code": "ALA",
-                    "timezone": "Asia/Almaty"
-                  },
-                  "destination": {
-                    "code": "NRT",
-                    "city_code": "TYO",
-                    "timezone": "Asia/Tokyo"
-                  },
-                  "departure_at": "2026-11-07T15:00:00Z",
-                  "arrival_at": "2026-11-07T22:00:00Z",
-                  "marketing_carrier": "XX",
-                  "operating_carrier": "XX",
-                  "flight_number": "202"
-                }
-              ],
-              "total_price": {
-                "amount": "24000",
-                "currency": "RUB"
-              },
-              "passengers": 1,
-              "cabin": "economy",
-              "checked_baggage_included": true,
-              "protected_connection": false,
-              "booking_url": null,
-              "fetched_at": "2026-10-23T12:03:37.659204Z",
-              "expires_at": "2026-10-23T12:23:37.659204Z"
-            }
-          ],
-          "stopover": {
-            "city_code": "ALA",
-            "name": "Алматы (демонстрационные данные)",
-            "country_code": "KZ",
-            "timezone": "Asia/Almaty",
-            "tourism_score": 0.85,
-            "minimum_visit_hours": 3.0,
-            "rewarding_visit_hours": 20.0,
-            "hotel_per_night": {
-              "amount": "5000",
-              "currency": "RUB"
-            },
-            "visas": [
+      "score": null
+    },
+    {
+      "route": {
+        "id": "292b2b4fb4e13dc4ee2bed70",
+        "kind": "stopover",
+        "tickets": [
+          {
+            "provider": "synthetic-demo",
+            "offer_id": "outbound",
+            "segments": [
               {
-                "citizenship": "RU",
-                "status": "allowed",
-                "kind": "visa_free",
-                "fee_per_person": {
-                  "amount": "0",
-                  "currency": "RUB"
+                "origin": {
+                  "code": "SVO",
+                  "city_code": "MOW",
+                  "timezone": "Europe/Moscow"
                 },
-                "ease": 1.0,
-                "processing_days": 0,
-                "max_stay_hours": 72.0,
-                "verified_at": "2026-10-23",
-                "valid_until": "2027-01-21",
-                "source": "SYNTHETIC DEMO: not actual immigration advice"
+                "destination": {
+                  "code": "ALA",
+                  "city_code": "ALA",
+                  "timezone": "Asia/Almaty"
+                },
+                "departure_at": "2026-11-18T01:00:00Z",
+                "arrival_at": "2026-11-18T05:00:00Z",
+                "marketing_carrier": "XX",
+                "operating_carrier": "XX",
+                "flight_number": "101"
               }
-            ]
-          },
-          "visa": {
-            "citizenship": "RU",
-            "status": "allowed",
-            "kind": "visa_free",
-            "fee_per_person": {
-              "amount": "0",
+            ],
+            "total_price": {
+              "amount": "12000",
               "currency": "RUB"
             },
-            "ease": 1.0,
-            "processing_days": 0,
-            "max_stay_hours": 72.0,
-            "verified_at": "2026-10-23",
-            "valid_until": "2027-01-21",
-            "source": "SYNTHETIC DEMO: not actual immigration advice"
+            "unknown_costs": [],
+            "passengers": 1,
+            "cabin": "economy",
+            "checked_baggage_included": true,
+            "baggage_description": "Synthetic fare: one checked bag included",
+            "protected_connection": false,
+            "fetched_at": "2026-11-04T09:42:48.470518Z",
+            "expires_at": "2026-11-04T10:02:48.470518Z"
           },
-          "ticket_cost": {
-            "amount": "36000",
-            "currency": "RUB"
-          },
-          "visa_cost": {
-            "amount": "0",
-            "currency": "RUB"
-          },
-          "total_cost": {
-            "amount": "36000",
-            "currency": "RUB"
-          },
-          "metrics": {
-            "stopover_hours": 34.0,
-            "available_hours": 29.0,
-            "daytime_hours": 19.0,
-            "nighttime_hours": 10.0,
-            "daytime_fraction": 0.6551724137931034,
-            "total_trip_hours": 45.0,
+          {
+            "provider": "synthetic-demo",
+            "offer_id": "onward",
+            "segments": [
+              {
+                "origin": {
+                  "code": "ALA",
+                  "city_code": "ALA",
+                  "timezone": "Asia/Almaty"
+                },
+                "destination": {
+                  "code": "NRT",
+                  "city_code": "TYO",
+                  "timezone": "Asia/Tokyo"
+                },
+                "departure_at": "2026-11-19T15:00:00Z",
+                "arrival_at": "2026-11-19T22:00:00Z",
+                "marketing_carrier": "XX",
+                "operating_carrier": "XX",
+                "flight_number": "202"
+              }
+            ],
+            "total_price": {
+              "amount": "24000",
+              "currency": "RUB"
+            },
+            "unknown_costs": [],
+            "passengers": 1,
+            "cabin": "economy",
+            "checked_baggage_included": true,
+            "baggage_description": "Synthetic fare: one checked bag included",
+            "protected_connection": false,
+            "fetched_at": "2026-11-04T09:42:48.470518Z",
+            "expires_at": "2026-11-04T10:02:48.470518Z"
+          }
+        ],
+        "stopovers": [
+          {
+            "city_code": "ALA",
+            "arrival_airport": {
+              "code": "ALA",
+              "city_code": "ALA",
+              "timezone": "Asia/Almaty"
+            },
+            "departure_airport": {
+              "code": "ALA",
+              "city_code": "ALA",
+              "timezone": "Asia/Almaty"
+            },
+            "arrival_at": "2026-11-18T05:00:00Z",
+            "departure_at": "2026-11-19T15:00:00Z",
+            "duration_hours": 34.0,
+            "tourism_score": 85.0,
             "airport_change": false,
             "self_transfer": true
+          }
+        ],
+        "costs": [
+          {
+            "key": "ticket:0",
+            "kind": "ticket",
+            "original": {
+              "amount": "12000",
+              "currency": "RUB"
+            },
+            "rub_amount": "12000.00",
+            "unknown_reason": null
           },
-          "warnings": [
-            "hotel_and_ground_transport_not_included",
-            "recheck_fares_and_entry",
-            "unprotected_connection"
-          ]
+          {
+            "key": "ticket:1",
+            "kind": "ticket",
+            "original": {
+              "amount": "24000",
+              "currency": "RUB"
+            },
+            "rub_amount": "24000.00",
+            "unknown_reason": null
+          },
+          {
+            "key": "visa:0:KZ",
+            "kind": "visa",
+            "original": {
+              "amount": "0",
+              "currency": "RUB"
+            },
+            "rub_amount": "0.00",
+            "unknown_reason": null
+          }
+        ],
+        "full_cost_known": true,
+        "unknown_costs": [],
+        "total_trip_hours": 45.0,
+        "stopover": null,
+        "visa": null,
+        "ticket_cost": {
+          "amount": "36000.00",
+          "currency": "RUB"
         },
-        "score": {
-          "total": 70.65450928381964,
-          "components": [
-            {
-              "name": "price",
-              "value": 0.625,
-              "weight": 0.4,
-              "contribution": 25.0
+        "visa_cost": {
+          "amount": "0",
+          "currency": "RUB"
+        },
+        "total_cost": {
+          "amount": "36000.00",
+          "currency": "RUB"
+        },
+        "metrics": null,
+        "warnings": [
+          "hotel_and_ground_transport_not_included",
+          "separate_tickets"
+        ]
+      },
+      "score": null
+    },
+    {
+      "route": {
+        "id": "097c0f0f584766af983e7989",
+        "kind": "stopover",
+        "tickets": [
+          {
+            "provider": "synthetic-demo",
+            "offer_id": "through",
+            "segments": [
+              {
+                "origin": {
+                  "code": "SVO",
+                  "city_code": "MOW",
+                  "timezone": "Europe/Moscow"
+                },
+                "destination": {
+                  "code": "ALA",
+                  "city_code": "ALA",
+                  "timezone": "Asia/Almaty"
+                },
+                "departure_at": "2026-11-18T01:00:00Z",
+                "arrival_at": "2026-11-18T05:00:00Z",
+                "marketing_carrier": "XX",
+                "operating_carrier": "XX",
+                "flight_number": "101"
+              },
+              {
+                "origin": {
+                  "code": "ALA",
+                  "city_code": "ALA",
+                  "timezone": "Asia/Almaty"
+                },
+                "destination": {
+                  "code": "NRT",
+                  "city_code": "TYO",
+                  "timezone": "Asia/Tokyo"
+                },
+                "departure_at": "2026-11-19T15:00:00Z",
+                "arrival_at": "2026-11-19T22:00:00Z",
+                "marketing_carrier": "XX",
+                "operating_carrier": "XX",
+                "flight_number": "202"
+              }
+            ],
+            "total_price": {
+              "amount": "42000",
+              "currency": "RUB"
             },
-            {
-              "name": "tourism",
-              "value": 0.85,
-              "weight": 0.25,
-              "contribution": 21.25
+            "unknown_costs": [],
+            "passengers": 1,
+            "cabin": "economy",
+            "checked_baggage_included": true,
+            "baggage_description": "Synthetic fare: one checked bag included",
+            "protected_connection": true,
+            "fetched_at": "2026-11-04T09:42:48.470518Z",
+            "expires_at": "2026-11-04T10:02:48.470518Z"
+          }
+        ],
+        "stopovers": [
+          {
+            "city_code": "ALA",
+            "arrival_airport": {
+              "code": "ALA",
+              "city_code": "ALA",
+              "timezone": "Asia/Almaty"
             },
-            {
-              "name": "daytime",
-              "value": 0.6551724137931034,
-              "weight": 0.15,
-              "contribution": 9.827586206896552
+            "departure_airport": {
+              "code": "ALA",
+              "city_code": "ALA",
+              "timezone": "Asia/Almaty"
             },
-            {
-              "name": "visa",
-              "value": 1.0,
-              "weight": 0.1,
-              "contribution": 10.0
+            "arrival_at": "2026-11-18T05:00:00Z",
+            "departure_at": "2026-11-19T15:00:00Z",
+            "duration_hours": 34.0,
+            "tourism_score": 85.0,
+            "airport_change": false,
+            "self_transfer": false
+          }
+        ],
+        "costs": [
+          {
+            "key": "ticket:0",
+            "kind": "ticket",
+            "original": {
+              "amount": "42000",
+              "currency": "RUB"
             },
-            {
-              "name": "duration",
-              "value": 0.6153846153846154,
-              "weight": 0.05,
-              "contribution": 3.076923076923077
+            "rub_amount": "42000.00",
+            "unknown_reason": null
+          },
+          {
+            "key": "visa:0:KZ",
+            "kind": "visa",
+            "original": {
+              "amount": "0",
+              "currency": "RUB"
             },
-            {
-              "name": "protection",
-              "value": 0.30000000000000004,
-              "weight": 0.05,
-              "contribution": 1.5000000000000002
-            }
-          ]
-        }
-      }
-    ],
-    "searched_cities": [
-      "ALA"
-    ],
-    "evaluated_candidates": 2,
-    "rejected": {},
-    "complete": true,
-    "warnings": [
-      "synthetic_demo_data"
-    ],
-    "generated_at": "2026-10-23T12:03:37.659411Z"
-  }
+            "rub_amount": "0.00",
+            "unknown_reason": null
+          }
+        ],
+        "full_cost_known": true,
+        "unknown_costs": [],
+        "total_trip_hours": 45.0,
+        "stopover": null,
+        "visa": null,
+        "ticket_cost": {
+          "amount": "42000.00",
+          "currency": "RUB"
+        },
+        "visa_cost": {
+          "amount": "0",
+          "currency": "RUB"
+        },
+        "total_cost": {
+          "amount": "42000.00",
+          "currency": "RUB"
+        },
+        "metrics": null,
+        "warnings": [
+          "hotel_and_ground_transport_not_included"
+        ]
+      },
+      "score": null
+    }
+  ],
+  "searched_cities": [
+    "MOW",
+    "TYO",
+    "ALA"
+  ],
+  "evaluated_candidates": 3,
+  "rejected": {},
+  "complete": true,
+  "warnings": [
+    "synthetic_demo_data"
+  ],
+  "generated_at": "2026-11-04T09:42:48.470518Z"
 }

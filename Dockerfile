@@ -18,14 +18,17 @@ FROM python:3.14-slim-bookworm AS runtime
 
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
 
 RUN groupadd --gid 10001 ubas \
-    && useradd --uid 10001 --gid ubas --no-create-home \
+    && useradd --uid 10001 --gid ubas --create-home \
         --shell /usr/sbin/nologin ubas
 
 WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
+RUN python -m playwright install --with-deps chromium \
+    && chmod -R a+rX /opt/playwright
 COPY docker/entrypoint.py /app/docker-entrypoint.py
 
 USER ubas

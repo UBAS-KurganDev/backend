@@ -191,7 +191,10 @@ class PostgresQueryRepository:
             if row.status != "completed" or row.result_json is None:
                 raise QueryNotReadyError
             return QueryResult(
-                query_id=row.id, result=PlanResult.model_validate(row.result_json)
+                query_id=row.id,
+                result=PlanResult.model_validate(
+                    {"schema_version": 1, **row.result_json}
+                ),
             )
 
     async def claim_next(self) -> ClaimedQuery | None:

@@ -116,6 +116,15 @@ class WorkerTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(self.repo.fail.call_args.args[-1])
         self.assertEqual(self.repo.fail.call_args.args[2].code, "invalid_request")
 
+    async def test_partial_search_is_failure_without_published_result(self) -> None:
+        self.planner.plan.return_value = empty_result().model_copy(
+            update={"complete": False, "warnings": ("provider_query_limit",)}
+        )
+        await self.worker._execute(claimed_query())
+        self.repo.complete.assert_not_called()
+        self.assertEqual(self.repo.fail.call_args.args[2].code, "search_incomplete")
+        self.assertIsNone(self.repo.fail.call_args.args[-1])
+
     async def test_shutdown_cancels_work_before_releasing(self) -> None:
         started = asyncio.Event()
         cancelled = asyncio.Event()

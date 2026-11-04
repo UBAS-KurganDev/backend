@@ -12,7 +12,7 @@ from unittest.mock import patch
 from ubas_backend.routing.demo import create_flight_provider, write_demo_catalog
 from ubas_backend.routing.planner import RoutePlanner
 from ubas_backend.routing.schemas import RouteRequest
-from ubas_backend.routing.storage import SqliteCatalog
+from ubas_backend.routing.storage import SqliteCityRepository, SqliteTopologyRepository
 
 
 class DemoCatalogTests(unittest.IsolatedAsyncioTestCase):
@@ -25,11 +25,12 @@ class DemoCatalogTests(unittest.IsolatedAsyncioTestCase):
             date_to=start + timedelta(days=3),
         )
         with (
-            closing(SqliteCatalog(path)) as catalog,
+            closing(SqliteTopologyRepository(path)) as topology,
+            closing(SqliteCityRepository(path)) as cities,
             patch("ubas_backend.routing.demo.datetime") as clock,
         ):
             clock.now.return_value = now
-            return await RoutePlanner(create_flight_provider(), catalog, catalog).plan(
+            return await RoutePlanner(create_flight_provider(), topology, cities).plan(
                 request, now=now
             )
 
@@ -41,15 +42,13 @@ class DemoCatalogTests(unittest.IsolatedAsyncioTestCase):
                 write_demo_catalog(path, now=now)
                 result = await self.plan(path, now)
                 self.assertTrue(result.complete)
-                self.assertEqual(len(result.routes), 2)
-                self.assertEqual(result.routes[0].route.visa.verified_at, now.date())
-                self.assertEqual(
-                    result.routes[0].route.visa.valid_until,
-                    (now + timedelta(days=90)).date(),
+                self.assertEqual(len(result.routes), 3)
+                self.assertTrue(
+                    all(item.route.full_cost_known for item in result.routes)
                 )
                 self.assertIn("synthetic_demo_data", result.warnings)
 
-    async def test_expired_catalog_requires_explicit_regeneration(self):
+    async def test_visa_eligibility_expiry_does_not_exclude_routes(self):
         with TemporaryDirectory() as directory:
             path = Path(directory) / "demo.sqlite3"
             created = datetime(2026, 10, 23, 12, tzinfo=UTC)
@@ -57,13 +56,14 @@ class DemoCatalogTests(unittest.IsolatedAsyncioTestCase):
             write_demo_catalog(path, now=created)
             original = path.read_bytes()
             expired = await self.plan(path, later)
-            self.assertEqual(expired.routes, ())
-            self.assertEqual(expired.rejected, {"city_visa": 1})
+            self.assertEqual(len(expired.routes), 3)
             self.assertEqual(path.read_bytes(), original)
             write_demo_catalog(path, now=later, overwrite=True)
             refreshed = await self.plan(path, later)
-            self.assertEqual(len(refreshed.routes), 2)
-            self.assertEqual(refreshed.routes[0].route.visa.verified_at, later.date())
+            self.assertEqual(len(refreshed.routes), 3)
+            self.assertTrue(
+                all(item.route.full_cost_known for item in refreshed.routes)
+            )
 
     def test_existing_file_is_preserved_without_overwrite(self):
         with TemporaryDirectory() as directory:

@@ -73,11 +73,10 @@ class Settings:
         provider = os.getenv("UBAS_FLIGHT_PROVIDER_FACTORY", "")
         if need_planner and not provider:
             raise RuntimeError("UBAS_FLIGHT_PROVIDER_FACTORY must be configured")
+        catalog_path = os.getenv("UBAS_CATALOG_PATH")
         return cls(
             database_url=_required("UBAS_DATABASE_URL"),
-            catalog_path=(
-                Path(_required("UBAS_CATALOG_PATH")) if need_planner else None
-            ),
+            catalog_path=(Path(catalog_path) if catalog_path else None),
             flight_provider_factory=provider,
             embedded_worker=embedded,
             worker_concurrency=_positive_int("UBAS_WORKER_CONCURRENCY", 2),

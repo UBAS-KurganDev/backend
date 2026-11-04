@@ -1,212 +1,196 @@
-"""Чистый маппинг ответов agent.ru в доменные контракты backend.
+"""Translate source purchase options, never carrier/group minimum prices.
 
-На входе — разобранный JSON, перехваченный скрапером (или полученный из
-кэша); на выходе — валидированные модели `routing.schemas`. Модуль не
-выполняет I/O, поэтому легко покрывается регрессионными тестами.
-
-Контракт `TicketOffer` требует-aware datetime, город IATA, цену в валюте
-запроса. Чего agent.ru не гарантирует — выбрасывается с типизированной
-причиной; частично распознанный ответ отдаётся с предупреждениями.
+Observed agent.ru structure:
+offers/ow_offers -> carrier.offers -> group.segments (purchase alternatives)
+-> flights_info (physical flights of that one alternative).
 """
 
-from collections.abc import Iterator
-from datetime import UTC, date, datetime, time, timedelta
+import hashlib
+import re
+from datetime import UTC, date, datetime, time
 from decimal import Decimal, InvalidOperation
 from typing import Any
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from zoneinfo import ZoneInfo
 
 from pydantic import ValidationError
 
 from ubas_backend.agent_scraper.airports import airport_for_code
+from ubas_backend.agent_scraper.models import CapturedOffers, SearchRequest
 from ubas_backend.routing.schemas import (
     Airport,
+    FlightSearchResult,
     FlightSegment,
     Money,
     TicketOffer,
 )
 
-PROVIDER_NAME = "agent-ru"
 
-# agent.ru отдаёт время строками; TTL цены неизвестен, берём консервативно.
-_OFFER_TTL = timedelta(minutes=30)
-
-_CABIN_BY_CODE: dict[str, str] = {
-    "E": "economy",
-    "W": "premium_economy",
-    "B": "business",
-    "F": "first",
-}
+class MappingFailure(ValueError):
+    pass
 
 
-class MappingFailure(Exception):
-    """Типизированная причина, по которой ответ не стал предложением."""
+def _text(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise MappingFailure("missing_field")
+    return value.strip()
 
 
-def _airport(code: Any) -> Airport | None:
-    if not isinstance(code, str):
-        return None
-    return airport_for_code(code.strip().upper())
+def _objects(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+        raise MappingFailure("invalid_collection")
+    return value
 
 
-def _aware_datetime(day: Any, clock: Any, airport: Airport | None) -> datetime | None:
-    """Склеивает '2026-11-05' и '14:30:00' в aware datetime по зоне аэропорта."""
-    if not isinstance(day, str) or not isinstance(clock, str):
+def _airport(value: Any) -> Airport:
+    airport = airport_for_code(_text(value))
+    if airport is None:
+        raise MappingFailure("unknown_airport")
+    return airport
+
+
+def _schedule(flight: dict[str, Any], side: str, airport: Airport) -> datetime:
+    day = date.fromisoformat(_text(flight.get(f"{side}_date")))
+    clock = time.fromisoformat(_text(flight.get(f"{side}_local_time")))
+    if clock.tzinfo is not None:
+        raise MappingFailure("nonlocal_schedule")
+    naive = datetime.combine(day, clock)
+    zone = ZoneInfo(airport.timezone)
+    value = naive.replace(tzinfo=zone)
+    # Reject nonexistent/ambiguous local times instead of inventing a DST fold.
+    if (
+        value.astimezone(UTC).astimezone(zone).replace(tzinfo=None) != naive
+        or value.utcoffset() != naive.replace(tzinfo=zone, fold=1).utcoffset()
+    ):
+        raise MappingFailure("ambiguous_schedule")
+    return value
+
+
+def _segment(flight: dict[str, Any]) -> FlightSegment:
+    if flight.get("service_class") not in ("Эконом", "Economy"):
+        raise MappingFailure("unsupported_cabin")
+    if flight.get("techstop") or flight.get("vehicle_type") != "aircraft":
+        raise MappingFailure("unsupported_flight")
+    origin = _airport(flight.get("departure_airport"))
+    destination = _airport(flight.get("arrival_airport"))
+    return FlightSegment(
+        origin=origin,
+        destination=destination,
+        departure_at=_schedule(flight, "departure", origin),
+        arrival_at=_schedule(flight, "arrival", destination),
+        marketing_carrier=_text(flight.get("marketing_airline_code")),
+        operating_carrier=_text(flight.get("operating_airline_code")),
+        flight_number=_text(flight.get("flight_number")),
+    )
+
+
+def _price(value: Any, currency: str) -> Money | None:
+    if value is None:
         return None
     try:
-        naive = datetime.combine(
-            date.fromisoformat(day[: len("2026-11-05")]), time.fromisoformat(clock)
-        )
-    except ValueError:
-        return None
-    zone = airport.timezone if airport else "UTC"
-    try:
-        return naive.replace(tzinfo=ZoneInfo(zone))
-    except ZoneInfoNotFoundError, ValueError:
-        return None
+        amount = Decimal(str(value))
+    except InvalidOperation as error:
+        raise MappingFailure("invalid_price") from error
+    return Money(amount=amount, currency=currency)
 
 
-def _money(amount: Any, currency: str) -> Money | None:
-    try:
-        value = Decimal(str(amount))
-    except InvalidOperation, ValueError:
-        return None
-    if not value.is_finite() or value < 0:
-        return None
-    return Money(amount=value, currency=currency)
+def _baggage(flights: list[dict[str, Any]]) -> tuple[bool | None, str]:
+    states: list[bool | None] = []
+    descriptions: list[str] = []
+    for flight in flights:
+        raw = flight.get("baggage")
+        text = raw.strip() if isinstance(raw, str) else ""
+        descriptions.append(text or "unknown")
+        normalized = text.upper().replace(" ", "")
+        if normalized in ("NO", "0PC", "0KG"):
+            states.append(False)
+        elif re.fullmatch(r"[1-9][0-9]*(?:PC|KG)", normalized):
+            states.append(True)
+        else:
+            states.append(None)
+    included = False if False in states else (True if all(states) else None)
+    return included, "; ".join(descriptions)
 
 
-def _carrier(offer: dict[str, Any], fallback: str) -> str:
-    for source in (offer.get("marketing_airline_code"), fallback):
-        if isinstance(source, str) and len(source) >= 2:
-            return source[:3].upper()
-    return "XX"
-
-
-def _segments(offer: dict[str, Any], fallback_carrier: str) -> Iterator[FlightSegment]:
-    for segment in offer.get("segments") or []:
-        if not isinstance(segment, dict):
-            continue
-        origin = _airport(segment.get("departure_airport"))
-        destination = _airport(segment.get("arrival_airport"))
-        if origin is None or destination is None:
-            raise MappingFailure("unknown_airport")
-        departure = _aware_datetime(
-            segment.get("departure_date"), segment.get("departure_time"), origin
-        )
-        arrival = _aware_datetime(
-            segment.get("arrival_date") or segment.get("departure_date"),
-            segment.get("arrival_time"),
-            destination,
-        )
-        if departure is None or arrival is None:
-            raise MappingFailure("missing_schedule")
-        yield FlightSegment(
-            origin=origin,
-            destination=destination,
-            departure_at=departure,
-            arrival_at=arrival,
-            marketing_carrier=_carrier(segment, fallback_carrier),
-            operating_carrier=_carrier(segment, fallback_carrier),
-            flight_number=str(
-                segment.get("flight_number") or segment.get("flightNumber") or "0"
-            ),
-        )
-
-
-def _itineraries(
-    segments: tuple[FlightSegment, ...],
-) -> Iterator[tuple[FlightSegment, ...]]:
-    """agent.ru складывает рейсы дня в один offer; выделяем отдельные маршруты.
-
-    Сегмент продолжает предыдущий маршрут, только если вылетает из города
-    его прибытия и позже прилёта (стыковка); иначе начинается новый маршрут.
-    Контракт TicketOffer допускает не более двух сегментов.
-    """
-    current: list[FlightSegment] = []
-    for segment in segments:
-        if current:
-            last = current[-1]
-            connects = (
-                len(current) < 2
-                and last.destination.city_code == segment.origin.city_code
-                and segment.departure_at > last.arrival_at
-            )
-            if not connects:
-                yield tuple(current)
-                current = []
-        current.append(segment)
-    if current:
-        yield tuple(current)
-
-
-def map_group(
-    group: dict[str, Any], *, now: datetime, passengers: int, currency: str
-) -> Iterator[TicketOffer]:
-    """Преобразует одну группу авиакомпании из ответа agent.ru в офферы."""
-    carrier = str(group.get("carrier_code") or group.get("airCompany") or "XX")
-    for index, offer in enumerate(group.get("offers") or []):
-        if not isinstance(offer, dict):
-            continue
-        try:
-            segments = tuple(_segments(offer, carrier))
-        except MappingFailure:
-            continue
-        if not segments:
-            continue
-        price = next(
-            (
-                money
-                for key in ("min_price", "price")
-                if (money := _money(offer.get(key), currency)) is not None
-            ),
-            None,
-        )
-        if price is None:
-            continue
-        for itinerary in _itineraries(segments):
-            try:
-                yield TicketOffer(
-                    provider=PROVIDER_NAME,
-                    offer_id=f"{carrier}:{index}:{len(itinerary)}",
-                    segments=itinerary,
-                    total_price=price,
-                    passengers=passengers,
-                    checked_baggage_included=None,
-                    fetched_at=now,
-                    expires_at=now + _OFFER_TTL,
-                )
-            except ValidationError:
-                continue
+def _ticket(
+    raw: dict[str, Any],
+    request: SearchRequest,
+    captured: CapturedOffers,
+    currency: str,
+    occurrence: str,
+) -> TicketOffer | None:
+    if raw.get("dir_number") != 1:
+        raise MappingFailure("unsupported_direction")
+    identifier = _text(raw.get("buy_id"))
+    flights = _objects(raw.get("flights_info"))
+    if not flights:
+        raise MappingFailure("missing_flights")
+    if len(flights) > 4:
+        return None  # Outside the supported MVP, not a malformed supported ticket.
+    details = _objects(raw.get("price_details"))
+    if (
+        len(details) != 1
+        or details[0].get("passenger_type") != "adult"
+        or details[0].get("qty") != 1
+    ):
+        raise MappingFailure("passengers_mismatch")
+    segments = tuple(_segment(flight) for flight in flights)
+    if (
+        segments[0].origin.code != request.origin
+        or segments[-1].destination.code != request.destination
+        or segments[0].departure_at.date() != request.depart_date
+    ):
+        raise MappingFailure("query_mismatch")
+    price = _price(raw.get("price"), currency)
+    checked, description = _baggage(flights)
+    # Hash source IDs: do not expose anonymous search/session tokens to the client.
+    offer_id = hashlib.sha256(f"{identifier}:{occurrence}".encode()).hexdigest()
+    return TicketOffer(
+        provider="agent-ru",
+        offer_id=offer_id,
+        segments=segments,
+        total_price=price,
+        unknown_costs=("ticket_price",) if price is None else (),
+        passengers=1,
+        checked_baggage_included=checked,
+        baggage_description=description,
+        # A buy_id does not prove a carrier guarantee for a connection.
+        protected_connection=False,
+        fetched_at=captured.fetched_at,
+    )
 
 
 def map_response(
-    data: dict[str, Any], *, now: datetime, passengers: int
-) -> tuple[TicketOffer, ...]:
-    """Преобразует перехваченный ответ `api/air/offers` в кортеж офферов.
-
-    agent.ru возвращает группы авиакомпаний в `offers` и односторонние
-    предложения в `ow_offers`; обе секции маппятся в плоский список.
-    """
-    currency = str(data.get("currency") or "RUB").upper()
-    now = now.astimezone(UTC)
-    results: list[TicketOffer] = []
-    groups: list[Any] = list(data.get("offers") or [])
-    ow = data.get("ow_offers")
-    if isinstance(ow, list):
-        groups.extend(ow)
-    for group in groups:
-        if isinstance(group, dict):
-            results.extend(
-                map_group(
-                    group,
-                    now=now,
-                    passengers=passengers,
-                    currency=currency,
-                )
-            )
-    return tuple(results)
-
-
-def cabin_from_code(code: str | None) -> str:
-    """Класс обслуживания agent.ru ('E'/'W'/'B'/'F') в контракт backend."""
-    return _CABIN_BY_CODE.get((code or "E").upper(), "economy")
+    captured: CapturedOffers, request: SearchRequest
+) -> FlightSearchResult:
+    data = captured.data
+    if data.get("status") != "Ready":
+        return FlightSearchResult(complete=False, warnings=("agent_not_ready",))
+    offers: list[TicketOffer] = []
+    warnings: set[str] = set()
+    try:
+        currency = _text(data.get("currency"))
+        for section in ("offers", "ow_offers"):
+            for group_index, group in enumerate(_objects(data.get(section))):
+                for index, alternatives in enumerate(_objects(group.get("offers"))):
+                    for number, raw in enumerate(
+                        _objects(alternatives.get("segments"))
+                    ):
+                        try:
+                            ticket = _ticket(
+                                raw,
+                                request,
+                                captured,
+                                currency,
+                                f"{section}:{group_index}:{index}:{number}",
+                            )
+                            if ticket is not None:
+                                offers.append(ticket)
+                        except MappingFailure as error:
+                            warnings.add(f"agent_mapping:{error}")
+                        except ValidationError, ValueError:
+                            warnings.add("agent_mapping:invalid_ticket")
+    except MappingFailure as error:
+        warnings.add(f"agent_mapping:{error}")
+    return FlightSearchResult(
+        offers=tuple(offers), complete=not warnings, warnings=tuple(sorted(warnings))
+    )

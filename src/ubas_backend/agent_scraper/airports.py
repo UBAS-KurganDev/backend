@@ -13,8 +13,7 @@ from ubas_backend.routing.schemas import Airport
 _AIRPORTS: dict[str, tuple[str, str]] = {
     # Код аэропорта: (код города, IANA timezone)
     "SVX": ("SVX", "Asia/Yekaterinburg"),
-    "MOW": ("MOW", "Europe/Moscow"),
-    "LED": ("LED", "Europe/Saint_Petersburg"),
+    "LED": ("LED", "Europe/Moscow"),
     "AER": ("AER", "Europe/Moscow"),
     "KZN": ("KZN", "Europe/Moscow"),
     "OVB": ("OVB", "Asia/Novosibirsk"),
@@ -36,12 +35,17 @@ _AIRPORTS: dict[str, tuple[str, str]] = {
     "TBS": ("TBS", "Asia/Tbilisi"),
     "GYD": ("GYD", "Asia/Baku"),
     "DXB": ("DXB", "Asia/Dubai"),
+    "DWC": ("DXB", "Asia/Dubai"),
     "HRG": ("HRG", "Africa/Cairo"),
     "SSH": ("SSH", "Africa/Cairo"),
     "CAI": ("CAI", "Africa/Cairo"),
     "BKK": ("BKK", "Asia/Bangkok"),
+    "DMK": ("BKK", "Asia/Bangkok"),
     "HKT": ("HKT", "Asia/Bangkok"),
     "PEK": ("BJS", "Asia/Shanghai"),
+    "PKX": ("BJS", "Asia/Shanghai"),
+    "HND": ("TYO", "Asia/Tokyo"),
+    "NRT": ("TYO", "Asia/Tokyo"),
     "CAN": ("CAN", "Asia/Shanghai"),
     "DEL": ("DEL", "Asia/Kolkata"),
     "GOI": ("GOI", "Asia/Kolkata"),
@@ -63,3 +67,12 @@ def airport_for_code(code: str) -> Airport | None:
     airport = Airport(code=code, city_code=city_code, timezone=timezone)
     _cache[code] = airport
     return airport
+
+
+def airports_for_city(city_code: str) -> tuple[Airport, ...]:
+    """Supported catalog coverage; never treat an arbitrary city as an airport."""
+    return tuple(
+        airport
+        for code, (city, _) in _AIRPORTS.items()
+        if city == city_code and (airport := airport_for_code(code)) is not None
+    )

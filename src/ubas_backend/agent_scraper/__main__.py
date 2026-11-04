@@ -1,35 +1,40 @@
+"""Explicit single-day diagnostic search, with the same provider used by workers."""
+
+import argparse
 import asyncio
-import sys
+import json
+from datetime import date
 
-from loguru import logger
-
-from ubas_backend.agent_scraper.models import CabinClass, SearchRequest
-from ubas_backend.agent_scraper.presenter import print_offers
-from ubas_backend.agent_scraper.service import get_flights
+from ubas_backend.agent_scraper.provider import AgentFlightProvider
+from ubas_backend.routing.schemas import FlightQuery
 
 
-async def main() -> None:
-    request = SearchRequest(
-        origin="SVX",
-        destination="AYT",
-        depart_date="2026-11-05",
-        adults=1,
-        cabin_class=CabinClass.ECONOMY,
-    )
-    logger.info("Ищем билеты: {request}", request=request)
+async def search(origin: str, destination: str, day: date) -> None:
+    provider = AgentFlightProvider()
+    try:
+        result = await provider.search(
+            FlightQuery(
+                origin=origin.upper(),
+                destination=destination.upper(),
+                departure_from=day,
+                departure_to=day,
+                passengers=1,
+                limit=200,
+            )
+        )
+        print(json.dumps(result.model_dump(mode="json"), indent=2))
+    finally:
+        await provider.aclose()
 
-    data = await get_flights(request)
-    print_offers(data)
 
-    print("\n" + "-" * 50)
-    logger.info("Повторный запуск — должны получить данные из кэша:")
-    cached = await get_flights(request)
-    print_offers(cached)
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--origin", required=True, help="City IATA")
+    parser.add_argument("--destination", required=True, help="City IATA")
+    parser.add_argument("--date", required=True, type=date.fromisoformat)
+    args = parser.parse_args()
+    asyncio.run(search(args.origin, args.destination, args.date))
 
 
 if __name__ == "__main__":
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-    if hasattr(sys.stderr, "reconfigure"):
-        sys.stderr.reconfigure(encoding="utf-8")
-    asyncio.run(main())
+    main()
