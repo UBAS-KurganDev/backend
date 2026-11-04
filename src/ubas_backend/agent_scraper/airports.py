@@ -24,6 +24,7 @@ _AIRPORTS: dict[str, tuple[str, str]] = {
     "SVO": ("MOW", "Europe/Moscow"),
     "DME": ("MOW", "Europe/Moscow"),
     "VKO": ("MOW", "Europe/Moscow"),
+    "ZIA": ("MOW", "Europe/Moscow"),
     "AYT": ("AYT", "Europe/Istanbul"),
     "IST": ("IST", "Europe/Istanbul"),
     "SAW": ("IST", "Europe/Istanbul"),
@@ -33,7 +34,7 @@ _AIRPORTS: dict[str, tuple[str, str]] = {
     "TAS": ("TAS", "Asia/Tashkent"),
     "EVN": ("EVN", "Asia/Yerevan"),
     "TBS": ("TBS", "Asia/Tbilisi"),
-    "GYD": ("GYD", "Asia/Baku"),
+    "GYD": ("BAK", "Asia/Baku"),
     "DXB": ("DXB", "Asia/Dubai"),
     "DWC": ("DXB", "Asia/Dubai"),
     "HRG": ("HRG", "Africa/Cairo"),
@@ -49,10 +50,14 @@ _AIRPORTS: dict[str, tuple[str, str]] = {
     "CAN": ("CAN", "Asia/Shanghai"),
     "DEL": ("DEL", "Asia/Kolkata"),
     "GOI": ("GOI", "Asia/Kolkata"),
+    "GOX": ("GOI", "Asia/Kolkata"),
     "MSQ": ("MSQ", "Europe/Minsk"),
 }
 
 _cache: dict[str, Airport] = {}
+
+# Historical codes can be decoded, but must not create duplicate/obsolete searches.
+_RETIRED_CODES = frozenset({"TSE"})
 
 
 def airport_for_code(code: str) -> Airport | None:
@@ -74,5 +79,7 @@ def airports_for_city(city_code: str) -> tuple[Airport, ...]:
     return tuple(
         airport
         for code, (city, _) in _AIRPORTS.items()
-        if city == city_code and (airport := airport_for_code(code)) is not None
+        if city == city_code
+        and code not in _RETIRED_CODES
+        and (airport := airport_for_code(code)) is not None
     )

@@ -3,8 +3,10 @@
 import asyncio
 import copy
 import json
+import os
 import tempfile
 import unittest
+from contextlib import AsyncExitStack
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -29,9 +31,16 @@ from ubas_backend.agent_scraper.service import FlightSearchService
 from ubas_backend.routing.config import PlannerConfig
 from ubas_backend.routing.diagnostics import SearchDiagnostics
 from ubas_backend.routing.offers import TicketSearch
+from ubas_backend.routing.planner import IncompleteSearchError
 from ubas_backend.routing.ports import FlightProviderError
-from ubas_backend.routing.schemas import FlightQuery, RouteRequest
-from ubas_backend.routing.storage import SqliteCityRepository
+from ubas_backend.routing.schemas import CityProfile, FlightQuery, RouteRequest
+from ubas_backend.routing.storage import (
+    CatalogData,
+    SqliteCatalog,
+    SqliteCityRepository,
+)
+from ubas_backend.runtime import create_planner
+from ubas_backend.settings import Settings as RuntimeSettings
 
 NOW = datetime(2026, 11, 4, 12, tzinfo=UTC)
 DAY = date(2026, 11, 18)
@@ -416,7 +425,7 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.complete)
         self.assertEqual(
             {call.args[0].origin for call in service.get_offers.call_args_list},
-            {"SVO", "DME", "VKO"},
+            {"SVO", "DME", "VKO", "ZIA"},
         )
         started, cancelled = asyncio.Event(), asyncio.Event()
 
@@ -520,6 +529,12 @@ class ModelAndCatalogTests(unittest.TestCase):
         self.assertEqual(airport_for_code("LED").timezone, "Europe/Moscow")
         self.assertIsNone(airport_for_code("MOW"))
         self.assertEqual({a.code for a in airports_for_city("TYO")}, {"NRT", "HND"})
+        self.assertEqual({a.code for a in airports_for_city("GOI")}, {"GOI", "GOX"})
+        self.assertEqual({a.code for a in airports_for_city("NQZ")}, {"NQZ"})
+        self.assertEqual({a.code for a in airports_for_city("BAK")}, {"GYD"})
+        self.assertEqual(airport_for_code("GYD").city_code, "BAK")
+        self.assertEqual(airport_for_code("TSE").city_code, "NQZ")
+        self.assertEqual(airports_for_city("GYD"), ())
         from ubas_backend.agent_scraper.airports import _AIRPORTS
 
         for code in _AIRPORTS:
@@ -543,6 +558,97 @@ class ModelAndCatalogTests(unittest.TestCase):
                     self.assertEqual(city.visas, ())
             finally:
                 repository.close()
+
+
+class PlannerIntegrationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_runtime_factory_source_mapping_and_planner_result(self):
+        # Replace only browser I/O. Use the real factory, service, mapping,
+        # SQLite readers, date refinement and planner, including failure handling.
+        for malformed in (False, True):
+            with (
+                self.subTest(malformed=malformed),
+                tempfile.TemporaryDirectory() as folder,
+            ):
+                path = Path(folder) / "catalog.sqlite3"
+                catalog = SqliteCatalog(path)
+                try:
+                    catalog.initialize()
+                    catalog.upsert(
+                        CatalogData(
+                            cities=(
+                                CityProfile(
+                                    city_code="SVX",
+                                    name="Test origin",
+                                    country_code="RU",
+                                    timezone="Asia/Yekaterinburg",
+                                    tourism_score=0,
+                                ),
+                            ),
+                            links=(),
+                        )
+                    )
+                finally:
+                    catalog.close()
+                calls = []
+
+                async def scrape(req, settings, calls=calls, malformed=malformed):
+                    calls.append(req)
+                    value = captured() if req == request() else empty()
+                    if malformed and req == request():
+                        raw_ticket(value)["flights_info"][0]["arrival_date"] = None
+                    return value
+
+                cache = ResponseCache(Settings(redis_url=None))
+                service = FlightSearchService(
+                    settings=Settings(redis_url=None), cache=cache, scrape=scrape
+                )
+                with (
+                    patch.dict(
+                        os.environ,
+                        {
+                            "UBAS_DATABASE_URL": "postgresql://unused",
+                            "UBAS_CATALOG_PATH": str(path),
+                            "UBAS_FLIGHT_PROVIDER_FACTORY": (
+                                "ubas_backend.agent_scraper.provider:create_flight_provider"
+                            ),
+                        },
+                        clear=True,
+                    ),
+                    patch("ubas_backend.agent_scraper.provider.datetime") as clock,
+                    patch(
+                        "ubas_backend.agent_scraper.provider.FlightSearchService",
+                        return_value=service,
+                    ),
+                ):
+                    clock.now.return_value = NOW
+                    settings = RuntimeSettings.from_environment()
+                    async with AsyncExitStack() as resources:
+                        planner = create_planner(settings, resources)
+                        self.assertIsInstance(
+                            planner.search.provider, AgentFlightProvider
+                        )
+                        route_request = RouteRequest(
+                            origin="SVX", destination="AYT", date_from=DAY, date_to=DAY
+                        )
+                        if malformed:
+                            with self.assertRaises(IncompleteSearchError):
+                                await planner.plan(route_request, now=NOW)
+                        else:
+                            result = await planner.plan(route_request, now=NOW)
+                            self.assertTrue(result.complete)
+                            self.assertGreater(len(result.routes), 0)
+                            prices = [r.route.total_cost.amount for r in result.routes]
+                            self.assertEqual(prices, sorted(prices))
+                            for ranked in result.routes:
+                                route = ranked.route
+                                self.assertEqual(len(route.tickets), 1)
+                                ticket = route.tickets[0]
+                                self.assertEqual(ticket.provider, "agent-ru")
+                                self.assertEqual(ticket.fetched_at, NOW)
+                                self.assertEqual(route.ticket_cost, ticket.total_price)
+                                self.assertLessEqual(len(ticket.segments), 4)
+                    self.assertFalse(cache._entries)
+                    self.assertIn(request(), calls)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ Python-бэкенд поиска дешёвых авиамаршрутов: пр
 
 Требования — [UBAS-KurganDev/docs](https://github.com/UBAS-KurganDev/docs).
 Авторизации, покупки, подбора отелей, проверки въезда и времени пересадки нет.
-Реальный билетный источник подключается отдельно; демо содержит вымышленные данные.
+Реальный билетный источник agent.ru работает внутри worker; демо содержит вымышленные данные.
 
 Исходники: src/ubas_backend. Python 3.14+, FastAPI, Pydantic 2,
 SQLAlchemy ORM/Core, Alembic. Зависимости через uv; Ruff и строгий mypy.
@@ -33,6 +33,15 @@ uv sync --locked
 API нужен каталог с часовыми зонами городов; worker также читает топологию и
 привлекательность. Источники заменяются обычным кодом в runtime.py, отдельно
 для топологии, профилей и географии.
+
+Для реальных билетов установите браузер командой
+`uv run --locked playwright install chromium` и задайте
+`UBAS_FLIGHT_PROVIDER_FACTORY=ubas_backend.agent_scraper.provider:create_flight_provider`.
+Скопируйте `config/planner.json` в `./var/planner.json` и укажите
+`UBAS_PLANNER_CONFIG_PATH=./var/planner.json` для API и worker.
+Это подключает скрапер к существующим трём HTTP-ручкам через очередь.
+Реальный каталог городов и топологии нужен отдельно; скрапер его не создаёт.
+Покрытие аэропортов, лимиты и настройка описаны в [инструкции](docs/agent-scraper.md).
 
 Для демонстрации создайте отдельный синтетический каталог:
 
