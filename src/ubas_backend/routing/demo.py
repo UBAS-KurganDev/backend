@@ -8,7 +8,6 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from zoneinfo import ZoneInfo
 
 from ubas_backend.routing.planner import RoutePlanner
 from ubas_backend.routing.schemas import (
@@ -22,7 +21,14 @@ from ubas_backend.routing.schemas import (
     TicketOffer,
     VisaPolicy,
 )
-from ubas_backend.routing.storage import CatalogData, FlightLink, SqliteCatalog
+from ubas_backend.routing.storage import (
+    CatalogData,
+    FlightLink,
+    SqliteCatalog,
+    SqliteCityRepository,
+    SqliteTopologyRepository,
+)
+from ubas_backend.routing.validation import matches_query
 
 
 class DemoFlightProvider:
@@ -33,24 +39,7 @@ class DemoFlightProvider:
         offers = (
             self.offers if self.offers is not None else _demo_offers(datetime.now(UTC))
         )
-        matches = [
-            offer
-            for offer in offers
-            if offer.segments[0].origin.city_code == query.origin
-            and offer.segments[-1].destination.city_code == query.destination
-            and len(offer.segments) == (2 if query.stopover_city else 1)
-            and (
-                query.stopover_city is None
-                or offer.segments[0].destination.city_code == query.stopover_city
-            )
-            and query.departure_from
-            <= offer.segments[0]
-            .departure_at.astimezone(ZoneInfo(offer.segments[0].origin.timezone))
-            .date()
-            <= query.departure_to
-            and offer.passengers == query.passengers
-            and offer.total_price.currency == query.currency
-        ]
+        matches = [offer for offer in offers if matches_query(offer, query)]
         return FlightSearchResult(
             offers=tuple(matches[: query.limit]),
             complete=len(matches) <= query.limit,
@@ -103,6 +92,7 @@ def _demo_offers(now: datetime) -> tuple[TicketOffer, ...]:
             total_price=Money(amount=Decimal(amount)),
             passengers=1,
             checked_baggage_included=True,
+            baggage_description="Synthetic fare: one checked bag included",
             protected_connection=protected,
             fetched_at=now,
             expires_at=now + timedelta(minutes=20),
@@ -112,6 +102,19 @@ def _demo_offers(now: datetime) -> tuple[TicketOffer, ...]:
         offer("outbound", (first,), "12000"),
         offer("onward", (second,), "24000"),
         offer("through", (first, second), "42000", protected=True),
+        offer(
+            "direct",
+            (
+                first.model_copy(
+                    update={
+                        "destination": tokyo,
+                        "arrival_at": departure + timedelta(hours=9),
+                        "flight_number": "303",
+                    }
+                ),
+            ),
+            "30000",
+        ),
     )
 
 
@@ -121,7 +124,7 @@ def _demo_catalog_data(now: datetime) -> CatalogData:
         name="Алматы (демонстрационные данные)",
         country_code="KZ",
         timezone="Asia/Almaty",
-        tourism_score=0.85,
+        tourism_score=85,
         rewarding_visit_hours=20,
         hotel_per_night=Money(amount=Decimal("5000")),
         visas=(
@@ -140,7 +143,23 @@ def _demo_catalog_data(now: datetime) -> CatalogData:
         ),
     )
     return CatalogData(
-        cities=(city,),
+        cities=(
+            city,
+            CityProfile(
+                city_code="MOW",
+                name="Moscow (synthetic demo)",
+                country_code="RU",
+                timezone="Europe/Moscow",
+                tourism_score=0,
+            ),
+            CityProfile(
+                city_code="TYO",
+                name="Tokyo (synthetic demo)",
+                country_code="JP",
+                timezone="Asia/Tokyo",
+                tourism_score=0,
+            ),
+        ),
         links=(
             FlightLink(origin="MOW", destination="ALA"),
             FlightLink(origin="ALA", destination="TYO"),
@@ -180,8 +199,11 @@ async def main() -> None:
     with TemporaryDirectory(prefix="ubas-demo-") as directory:
         path = Path(directory) / "catalog.sqlite3"
         write_demo_catalog(path, now=now)
-        with closing(SqliteCatalog(path)) as catalog:
-            planner = RoutePlanner(provider, catalog, catalog)
+        with (
+            closing(SqliteTopologyRepository(path)) as topology,
+            closing(SqliteCityRepository(path)) as cities,
+        ):
+            planner = RoutePlanner(provider, topology, cities)
             result = await planner.plan(
                 RouteRequest(
                     origin="MOW",

@@ -14,7 +14,7 @@ from ubas_backend.settings import Settings
 
 
 class ApiTests(unittest.IsolatedAsyncioTestCase):
-    async def post(self, *, key=None, date_to="2027-06-04", currency="RUB"):
+    async def post(self, *, key=None, date_to="2027-06-04", currency=None):
         app = create_app()
         repo = AsyncMock(spec=QueryRepository)
         app.state.query_manager = QueryManager(repo, RequestPolicy(PlannerConfig()))
@@ -24,7 +24,7 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
                 "destination": "TYO",
                 "date_from": "2027-06-01",
                 "date_to": date_to,
-                "currency": currency,
+                **({"currency": currency} if currency is not None else {}),
             }
         ).encode()
         headers = [(b"content-type", b"application/json")]
@@ -79,6 +79,6 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
             self.assertIsNotNone(
                 Settings.from_environment(need_planner=None).catalog_path
             )
-            self.assertIsNone(
+            self.assertIsNotNone(
                 Settings.from_environment(need_planner=False).catalog_path
             )
