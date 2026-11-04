@@ -28,6 +28,18 @@ uv run python -m ubas_backend.routing.demo
 uv run ubas-migrate
 ```
 
+Каталог городов для worker не создаётся автоматически. Наполните его туристическими
+оценками из OpenTripMap (бесплатный ключ — на <https://opentripmap.com>):
+
+```shell
+UBAS_OPENTRIPMAP_API_KEY=... uv run ubas-import-cities --catalog catalog.sqlite3
+```
+
+Задайте `UBAS_CATALOG_PATH=catalog.sqlite3`, чтобы API-процесс также отдавал
+эндпоинты каталога: `GET /api/v1/cities` (параметры `limit`, `min_tourism_score`,
+сортировка по туристической оценке) и `GET /api/v1/cities/{city_code}`. Без
+переменной эти эндпоинты отвечают 503, остальные работают как раньше.
+
 Затем запустите API и worker в разных терминалах:
 
 ```shell

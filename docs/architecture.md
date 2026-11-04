@@ -24,6 +24,13 @@ flowchart LR
 `SqliteCatalog` реализует топологию и профили городов, `WeightedScorer` — рейтинг,
 а `LocalDaytimeCalculator` — расчёт местного дневного времени.
 
+Каталог хранится в SQLite и доступен через SQLAlchemy ORM (`routing/orm.py`):
+профили городов и визовые правила — типизированные таблицы `city_profiles` и
+`visa_policies` (связь один-ко-многим), топология рейсов — `flight_links`. Строки
+конвертируются в pydantic-контракты через `model_validate`, поэтому данные из
+SQLite проходят ту же валидацию, что и данные из HTTP. Версия схемы хранится в
+`PRAGMA user_version`; каталоги устаревшей схемы отвергаются с подсказкой.
+
 `FlightProvider` остаётся адаптером: будущая интеграция приводит ответ агрегатора
 к моделям `FlightQuery` и `FlightSearchResult`, не меняя алгоритм поиска.
 

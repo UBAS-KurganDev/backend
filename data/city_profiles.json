@@ -1,0 +1,1822 @@
+{
+  "source": "OpenTripMap",
+  "generated_at": "2026-10-23T10:36:26.803762+00:00",
+  "scoring": {
+    "radius_meters": 10000,
+    "kinds": "interesting_places",
+    "min_rate": 3,
+    "landmark_rate": 4,
+    "landmark_weight": 3,
+    "score_floor": 0.05
+  },
+  "cities": [
+    {
+      "profile": {
+        "city_code": "LON",
+        "name": "London",
+        "country_code": "GB",
+        "timezone": "Europe/London",
+        "tourism_score": 1.0,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 1023,
+      "landmarks": 1696,
+      "population": 7556900
+    },
+    {
+      "profile": {
+        "city_code": "MAN",
+        "name": "Manchester",
+        "country_code": "GB",
+        "timezone": "Europe/London",
+        "tourism_score": 0.7784210076278992,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 88,
+      "landmarks": 237,
+      "population": 395515
+    },
+    {
+      "profile": {
+        "city_code": "EDI",
+        "name": "Edinburgh",
+        "country_code": "GB",
+        "timezone": "Europe/London",
+        "tourism_score": 0.7796400737607413,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 112,
+      "landmarks": 232,
+      "population": 464990
+    },
+    {
+      "profile": {
+        "city_code": "DUB",
+        "name": "Dublin",
+        "country_code": "IE",
+        "timezone": "Europe/Dublin",
+        "tourism_score": 0.6726244959417746,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 269,
+      "landmarks": 11,
+      "population": 1024027
+    },
+    {
+      "profile": {
+        "city_code": "PAR",
+        "name": "Paris",
+        "country_code": "FR",
+        "timezone": "Europe/Paris",
+        "tourism_score": 0.987447868356557,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 1777,
+      "landmarks": 1223,
+      "population": 2138551
+    },
+    {
+      "profile": {
+        "city_code": "NCE",
+        "name": "Nice",
+        "country_code": "FR",
+        "timezone": "Europe/Paris",
+        "tourism_score": 0.7020685228609348,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 63,
+      "landmarks": 111,
+      "population": 338620
+    },
+    {
+      "profile": {
+        "city_code": "LYS",
+        "name": "Lyon",
+        "country_code": "FR",
+        "timezone": "Europe/Paris",
+        "tourism_score": 0.779909135207576,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 312,
+      "landmarks": 166,
+      "population": 472317
+    },
+    {
+      "profile": {
+        "city_code": "BRU",
+        "name": "Brussels",
+        "country_code": "BE",
+        "timezone": "Europe/Brussels",
+        "tourism_score": 0.8668484579065956,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 396,
+      "landmarks": 468,
+      "population": 1019022
+    },
+    {
+      "profile": {
+        "city_code": "AMS",
+        "name": "Amsterdam",
+        "country_code": "NL",
+        "timezone": "Europe/Amsterdam",
+        "tourism_score": 0.9160956996672993,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 831,
+      "landmarks": 666,
+      "population": 741636
+    },
+    {
+      "profile": {
+        "city_code": "BER",
+        "name": "Berlin",
+        "country_code": "DE",
+        "timezone": "Europe/Berlin",
+        "tourism_score": 0.9705833895538127,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 738,
+      "landmarks": 1309,
+      "population": 3426354
+    },
+    {
+      "profile": {
+        "city_code": "MUC",
+        "name": "Munich",
+        "country_code": "DE",
+        "timezone": "Europe/Berlin",
+        "tourism_score": 0.9335953039968848,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 322,
+      "landmarks": 1000,
+      "population": 1260391
+    },
+    {
+      "profile": {
+        "city_code": "FRA",
+        "name": "Frankfurt",
+        "country_code": "DE",
+        "timezone": "Europe/Berlin",
+        "tourism_score": 0.8013110262782812,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 254,
+      "landmarks": 244,
+      "population": 650000
+    },
+    {
+      "profile": {
+        "city_code": "ZRH",
+        "name": "Zurich",
+        "country_code": "CH",
+        "timezone": "Europe/Zurich",
+        "tourism_score": 0.7762195220337355,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 174,
+      "landmarks": 203,
+      "population": 341730
+    },
+    {
+      "profile": {
+        "city_code": "GVA",
+        "name": "Geneva",
+        "country_code": "CH",
+        "timezone": "Europe/Zurich",
+        "tourism_score": 0.7063740638664188,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 97,
+      "landmarks": 105,
+      "population": 183981
+    },
+    {
+      "profile": {
+        "city_code": "VIE",
+        "name": "Vienna",
+        "country_code": "AT",
+        "timezone": "Europe/Vienna",
+        "tourism_score": 0.9451583722330754,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 820,
+      "landmarks": 958,
+      "population": 1691468
+    },
+    {
+      "profile": {
+        "city_code": "PRG",
+        "name": "Prague",
+        "country_code": "CZ",
+        "timezone": "Europe/Prague",
+        "tourism_score": 0.9618592030721819,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 871,
+      "landmarks": 1145,
+      "population": 1165581
+    },
+    {
+      "profile": {
+        "city_code": "WAW",
+        "name": "Warsaw",
+        "country_code": "PL",
+        "timezone": "Europe/Warsaw",
+        "tourism_score": 0.8759563173967009,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 715,
+      "landmarks": 414,
+      "population": 1702139
+    },
+    {
+      "profile": {
+        "city_code": "KRK",
+        "name": "Krakow",
+        "country_code": "PL",
+        "timezone": "Europe/Warsaw",
+        "tourism_score": 0.8577676392979469,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 483,
+      "landmarks": 391,
+      "population": 755050
+    },
+    {
+      "profile": {
+        "city_code": "BUD",
+        "name": "Budapest",
+        "country_code": "HU",
+        "timezone": "Europe/Budapest",
+        "tourism_score": 0.7884348190561749,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 576,
+      "landmarks": 100,
+      "population": 1741041
+    },
+    {
+      "profile": {
+        "city_code": "ZAG",
+        "name": "Zagreb",
+        "country_code": "HR",
+        "timezone": "Europe/Zagreb",
+        "tourism_score": 0.608357486864553,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 71,
+      "landmarks": 32,
+      "population": 698966
+    },
+    {
+      "profile": {
+        "city_code": "SOF",
+        "name": "Sofia",
+        "country_code": "BG",
+        "timezone": "Europe/Sofia",
+        "tourism_score": 0.6337062989750653,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 148,
+      "landmarks": 21,
+      "population": 1152556
+    },
+    {
+      "profile": {
+        "city_code": "BUH",
+        "name": "Bucharest",
+        "country_code": "RO",
+        "timezone": "Europe/Bucharest",
+        "tourism_score": 0.7755223358384683,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 70,
+      "landmarks": 236,
+      "population": 1877155
+    },
+    {
+      "profile": {
+        "city_code": "ATH",
+        "name": "Athens",
+        "country_code": "GR",
+        "timezone": "Europe/Athens",
+        "tourism_score": 0.7481566267921118,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 266,
+      "landmarks": 113,
+      "population": 664046
+    },
+    {
+      "profile": {
+        "city_code": "ROM",
+        "name": "Rome",
+        "country_code": "IT",
+        "timezone": "Europe/Rome",
+        "tourism_score": 0.9004724015342954,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 1482,
+      "landmarks": 323,
+      "population": 2318895
+    },
+    {
+      "profile": {
+        "city_code": "MIL",
+        "name": "Milan",
+        "country_code": "IT",
+        "timezone": "Europe/Rome",
+        "tourism_score": 0.8664240964166091,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 500,
+      "landmarks": 431,
+      "population": 1236837
+    },
+    {
+      "profile": {
+        "city_code": "VCE",
+        "name": "Venice",
+        "country_code": "IT",
+        "timezone": "Europe/Rome",
+        "tourism_score": 0.7660280033350905,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 632,
+      "landmarks": 27,
+      "population": 51298
+    },
+    {
+      "profile": {
+        "city_code": "FLR",
+        "name": "Florence",
+        "country_code": "IT",
+        "timezone": "Europe/Rome",
+        "tourism_score": 0.8397907298994608,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 978,
+      "landmarks": 142,
+      "population": 349296
+    },
+    {
+      "profile": {
+        "city_code": "NAP",
+        "name": "Naples",
+        "country_code": "IT",
+        "timezone": "Europe/Rome",
+        "tourism_score": 0.7868074392437304,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 629,
+      "landmarks": 78,
+      "population": 959470
+    },
+    {
+      "profile": {
+        "city_code": "MAD",
+        "name": "Madrid",
+        "country_code": "ES",
+        "timezone": "Europe/Madrid",
+        "tourism_score": 0.8217841178582829,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 527,
+      "landmarks": 221,
+      "population": 3255944
+    },
+    {
+      "profile": {
+        "city_code": "BCN",
+        "name": "Barcelona",
+        "country_code": "ES",
+        "timezone": "Europe/Madrid",
+        "tourism_score": 0.9907774053878113,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 569,
+      "landmarks": 1682,
+      "population": 1621537
+    },
+    {
+      "profile": {
+        "city_code": "LIS",
+        "name": "Lisbon",
+        "country_code": "PT",
+        "timezone": "Europe/Lisbon",
+        "tourism_score": 0.8437509359391392,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 160,
+      "landmarks": 432,
+      "population": 517802
+    },
+    {
+      "profile": {
+        "city_code": "OPO",
+        "name": "Porto",
+        "country_code": "PT",
+        "timezone": "Europe/Lisbon",
+        "tourism_score": 0.8069059679939175,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 90,
+      "landmarks": 316,
+      "population": 249633
+    },
+    {
+      "profile": {
+        "city_code": "IST",
+        "name": "Istanbul",
+        "country_code": "TR",
+        "timezone": "Europe/Istanbul",
+        "tourism_score": 0.7047793549581218,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 367,
+      "landmarks": 13,
+      "population": 14804116
+    },
+    {
+      "profile": {
+        "city_code": "AYT",
+        "name": "Antalya",
+        "country_code": "TR",
+        "timezone": "Europe/Istanbul",
+        "tourism_score": 0.39167427357450574,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 19,
+      "landmarks": 1,
+      "population": 758188
+    },
+    {
+      "profile": {
+        "city_code": "MOW",
+        "name": "Moscow",
+        "country_code": "RU",
+        "timezone": "Europe/Moscow",
+        "tourism_score": 0.9595838559072696,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 599,
+      "landmarks": 1206,
+      "population": 10381222
+    },
+    {
+      "profile": {
+        "city_code": "LED",
+        "name": "Saint Petersburg",
+        "country_code": "RU",
+        "timezone": "Europe/Moscow",
+        "tourism_score": 0.9058905900362644,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 338,
+      "landmarks": 746,
+      "population": 5028000
+    },
+    {
+      "profile": {
+        "city_code": "KZN",
+        "name": "Kazan",
+        "country_code": "RU",
+        "timezone": "Europe/Moscow",
+        "tourism_score": 0.7061098944507264,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 48,
+      "landmarks": 121,
+      "population": 1104738
+    },
+    {
+      "profile": {
+        "city_code": "SVX",
+        "name": "Yekaterinburg",
+        "country_code": "RU",
+        "timezone": "Asia/Yekaterinburg",
+        "tourism_score": 0.7213857181708352,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 80,
+      "landmarks": 131,
+      "population": 1349772
+    },
+    {
+      "profile": {
+        "city_code": "OVB",
+        "name": "Novosibirsk",
+        "country_code": "RU",
+        "timezone": "Asia/Novosibirsk",
+        "tourism_score": 0.6449301086528463,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 30,
+      "landmarks": 68,
+      "population": 1419007
+    },
+    {
+      "profile": {
+        "city_code": "MSQ",
+        "name": "Minsk",
+        "country_code": "BY",
+        "timezone": "Europe/Minsk",
+        "tourism_score": 0.8037132641148501,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 159,
+      "landmarks": 283,
+      "population": 1742124
+    },
+    {
+      "profile": {
+        "city_code": "IEV",
+        "name": "Kyiv",
+        "country_code": "UA",
+        "timezone": "Europe/Kiev",
+        "tourism_score": 0.7690384110973676,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 499,
+      "landmarks": 78,
+      "population": 2797553
+    },
+    {
+      "profile": {
+        "city_code": "RIX",
+        "name": "Riga",
+        "country_code": "LV",
+        "timezone": "Europe/Riga",
+        "tourism_score": 0.6861364979485798,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 105,
+      "landmarks": 79,
+      "population": 742572
+    },
+    {
+      "profile": {
+        "city_code": "VNO",
+        "name": "Vilnius",
+        "country_code": "LT",
+        "timezone": "Europe/Vilnius",
+        "tourism_score": 0.6425865811129495,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 226,
+      "landmarks": 1,
+      "population": 542366
+    },
+    {
+      "profile": {
+        "city_code": "TLL",
+        "name": "Tallinn",
+        "country_code": "EE",
+        "timezone": "Europe/Tallinn",
+        "tourism_score": 0.73935943647515,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 138,
+      "landmarks": 140,
+      "population": 394024
+    },
+    {
+      "profile": {
+        "city_code": "NYC",
+        "name": "New York",
+        "country_code": "US",
+        "timezone": "America/New_York",
+        "tourism_score": 0.6832390496296842,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 33,
+      "landmarks": 100,
+      "population": 19274244
+    },
+    {
+      "profile": {
+        "city_code": "BOS",
+        "name": "Boston",
+        "country_code": "US",
+        "timezone": "America/New_York",
+        "tourism_score": 0.9099577199162932,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 313,
+      "landmarks": 787,
+      "population": 667137
+    },
+    {
+      "profile": {
+        "city_code": "WAS",
+        "name": "Washington",
+        "country_code": "US",
+        "timezone": "America/New_York",
+        "tourism_score": 0.9050415804387487,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 516,
+      "landmarks": 680,
+      "population": 601723
+    },
+    {
+      "profile": {
+        "city_code": "CHI",
+        "name": "Chicago",
+        "country_code": "US",
+        "timezone": "America/Chicago",
+        "tourism_score": 0.80414440149469,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 304,
+      "landmarks": 236,
+      "population": 2720546
+    },
+    {
+      "profile": {
+        "city_code": "MIA",
+        "name": "Miami",
+        "country_code": "US",
+        "timezone": "America/New_York",
+        "tourism_score": 0.7009650214752465,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 116,
+      "landmarks": 92,
+      "population": 441003
+    },
+    {
+      "profile": {
+        "city_code": "ORL",
+        "name": "Orlando",
+        "country_code": "US",
+        "timezone": "America/New_York",
+        "tourism_score": 0.5743829140476477,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 26,
+      "landmarks": 32,
+      "population": 270934
+    },
+    {
+      "profile": {
+        "city_code": "LAS",
+        "name": "Las Vegas",
+        "country_code": "US",
+        "timezone": "America/Los_Angeles",
+        "tourism_score": 0.6284410317947637,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 132,
+      "landmarks": 23,
+      "population": 623747
+    },
+    {
+      "profile": {
+        "city_code": "LAX",
+        "name": "Los Angeles",
+        "country_code": "US",
+        "timezone": "America/Los_Angeles",
+        "tourism_score": 0.7630889653088987,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 157,
+      "landmarks": 179,
+      "population": 3971883
+    },
+    {
+      "profile": {
+        "city_code": "SFO",
+        "name": "San Francisco",
+        "country_code": "US",
+        "timezone": "America/Los_Angeles",
+        "tourism_score": 0.7630889653088987,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 352,
+      "landmarks": 114,
+      "population": 864816
+    },
+    {
+      "profile": {
+        "city_code": "YTO",
+        "name": "Toronto",
+        "country_code": "CA",
+        "timezone": "America/Toronto",
+        "tourism_score": 0.7602295345519611,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 298,
+      "landmarks": 126,
+      "population": 2600000
+    },
+    {
+      "profile": {
+        "city_code": "YMQ",
+        "name": "Montreal",
+        "country_code": "CA",
+        "timezone": "America/Toronto",
+        "tourism_score": 0.7537640287294708,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 262,
+      "landmarks": 125,
+      "population": 1600000
+    },
+    {
+      "profile": {
+        "city_code": "YVR",
+        "name": "Vancouver",
+        "country_code": "CA",
+        "timezone": "America/Vancouver",
+        "tourism_score": 0.6352375161688385,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 118,
+      "landmarks": 32,
+      "population": null
+    },
+    {
+      "profile": {
+        "city_code": "MEX",
+        "name": "Mexico City",
+        "country_code": "MX",
+        "timezone": "America/Mexico_City",
+        "tourism_score": 0.662848234971926,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 240,
+      "landmarks": 12,
+      "population": 12294193
+    },
+    {
+      "profile": {
+        "city_code": "CUN",
+        "name": "Cancun",
+        "country_code": "MX",
+        "timezone": "America/Cancun",
+        "tourism_score": 0.16971559499734812,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 2,
+      "landmarks": 0,
+      "population": 628306
+    },
+    {
+      "profile": {
+        "city_code": "HAV",
+        "name": "Havana",
+        "country_code": "CU",
+        "timezone": "America/Havana",
+        "tourism_score": 0.5622105492251501,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 67,
+      "landmarks": 14,
+      "population": 2163824
+    },
+    {
+      "profile": {
+        "city_code": "PUJ",
+        "name": "Punta Cana",
+        "country_code": "DO",
+        "timezone": "America/Santo_Domingo",
+        "tourism_score": 0.05,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 0,
+      "landmarks": 0,
+      "population": null
+    },
+    {
+      "profile": {
+        "city_code": "BOG",
+        "name": "Bogota",
+        "country_code": "CO",
+        "timezone": "America/Bogota",
+        "tourism_score": 0.6387288391191009,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 59,
+      "landmarks": 54,
+      "population": 7674366
+    },
+    {
+      "profile": {
+        "city_code": "LIM",
+        "name": "Lima",
+        "country_code": "PE",
+        "timezone": "America/Lima",
+        "tourism_score": 0.7216153701643816,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 162,
+      "landmarks": 104,
+      "population": 7737002
+    },
+    {
+      "profile": {
+        "city_code": "SCL",
+        "name": "Santiago",
+        "country_code": "CL",
+        "timezone": "America/Santiago",
+        "tourism_score": 0.7607113474103301,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 193,
+      "landmarks": 162,
+      "population": 4837295
+    },
+    {
+      "profile": {
+        "city_code": "BUE",
+        "name": "Buenos Aires",
+        "country_code": "AR",
+        "timezone": "America/Argentina/Buenos_Aires",
+        "tourism_score": 0.7830870954674534,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 510,
+      "landmarks": 108,
+      "population": 13076300
+    },
+    {
+      "profile": {
+        "city_code": "SAO",
+        "name": "Sao Paulo",
+        "country_code": "BR",
+        "timezone": "America/Sao_Paulo",
+        "tourism_score": 0.796110234086505,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 247,
+      "landmarks": 231,
+      "population": 10021295
+    },
+    {
+      "profile": {
+        "city_code": "RIO",
+        "name": "Rio de Janeiro",
+        "country_code": "BR",
+        "timezone": "America/Sao_Paulo",
+        "tourism_score": 0.747615832478169,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 119,
+      "landmarks": 161,
+      "population": 6023699
+    },
+    {
+      "profile": {
+        "city_code": "TYO",
+        "name": "Tokyo",
+        "country_code": "JP",
+        "timezone": "Asia/Tokyo",
+        "tourism_score": 0.8556426270587376,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 1246,
+      "landmarks": 126,
+      "population": 8336599
+    },
+    {
+      "profile": {
+        "city_code": "OSA",
+        "name": "Osaka",
+        "country_code": "JP",
+        "timezone": "Asia/Tokyo",
+        "tourism_score": 0.7391643248194328,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 440,
+      "landmarks": 39,
+      "population": 2592413
+    },
+    {
+      "profile": {
+        "city_code": "SEL",
+        "name": "Seoul",
+        "country_code": "KR",
+        "timezone": "Asia/Seoul",
+        "tourism_score": 0.7066375944195392,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 146,
+      "landmarks": 89,
+      "population": 10349312
+    },
+    {
+      "profile": {
+        "city_code": "PUS",
+        "name": "Busan",
+        "country_code": "KR",
+        "timezone": "Asia/Seoul",
+        "tourism_score": 0.4805663586950925,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 21,
+      "landmarks": 10,
+      "population": 3678555
+    },
+    {
+      "profile": {
+        "city_code": "BJS",
+        "name": "Beijing",
+        "country_code": "CN",
+        "timezone": "Asia/Shanghai",
+        "tourism_score": 0.6825845742052299,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 148,
+      "landmarks": 61,
+      "population": 11716620
+    },
+    {
+      "profile": {
+        "city_code": "SHA",
+        "name": "Shanghai",
+        "country_code": "CN",
+        "timezone": "Asia/Shanghai",
+        "tourism_score": 0.6940985090449959,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 134,
+      "landmarks": 78,
+      "population": 22315474
+    },
+    {
+      "profile": {
+        "city_code": "CAN",
+        "name": "Guangzhou",
+        "country_code": "CN",
+        "timezone": "Asia/Shanghai",
+        "tourism_score": 0.618861289959522,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 124,
+      "landmarks": 20,
+      "population": 11071424
+    },
+    {
+      "profile": {
+        "city_code": "SZX",
+        "name": "Shenzhen",
+        "country_code": "CN",
+        "timezone": "Asia/Shanghai",
+        "tourism_score": 0.46954993196473976,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 40,
+      "landmarks": 2,
+      "population": 10358381
+    },
+    {
+      "profile": {
+        "city_code": "CTU",
+        "name": "Chengdu",
+        "country_code": "CN",
+        "timezone": "Asia/Shanghai",
+        "tourism_score": 0.4519765692391182,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 15,
+      "landmarks": 8,
+      "population": 7415590
+    },
+    {
+      "profile": {
+        "city_code": "HKG",
+        "name": "Hong Kong",
+        "country_code": "HK",
+        "timezone": "Asia/Hong_Kong",
+        "tourism_score": 0.7613504684835393,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 416,
+      "landmarks": 89,
+      "population": 7012738
+    },
+    {
+      "profile": {
+        "city_code": "MFM",
+        "name": "Macau",
+        "country_code": "MO",
+        "timezone": "Asia/Macau",
+        "tourism_score": 0.652540951011564,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 80,
+      "landmarks": 57,
+      "population": 520400
+    },
+    {
+      "profile": {
+        "city_code": "TPE",
+        "name": "Taipei",
+        "country_code": "TW",
+        "timezone": "Asia/Taipei",
+        "tourism_score": 0.7359940697938057,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 283,
+      "landmarks": 86,
+      "population": 7871900
+    },
+    {
+      "profile": {
+        "city_code": "SIN",
+        "name": "Singapore",
+        "country_code": "SG",
+        "timezone": "Asia/Singapore",
+        "tourism_score": 0.6958561250616676,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 206,
+      "landmarks": 56,
+      "population": 3547809
+    },
+    {
+      "profile": {
+        "city_code": "KUL",
+        "name": "Kuala Lumpur",
+        "country_code": "MY",
+        "timezone": "Asia/Kuala_Lumpur",
+        "tourism_score": 0.5698606954005627,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 117,
+      "landmarks": 0,
+      "population": 1453975
+    },
+    {
+      "profile": {
+        "city_code": "BKK",
+        "name": "Bangkok",
+        "country_code": "TH",
+        "timezone": "Asia/Bangkok",
+        "tourism_score": 0.8090864756631718,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 153,
+      "landmarks": 302,
+      "population": 5104476
+    },
+    {
+      "profile": {
+        "city_code": "HKT",
+        "name": "Phuket",
+        "country_code": "TH",
+        "timezone": "Asia/Bangkok",
+        "tourism_score": 0.2894311899946962,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 2,
+      "landmarks": 2,
+      "population": 89072
+    },
+    {
+      "profile": {
+        "city_code": "CNX",
+        "name": "Chiang Mai",
+        "country_code": "TH",
+        "timezone": "Asia/Bangkok",
+        "tourism_score": 0.5612153840382522,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 27,
+      "landmarks": 27,
+      "population": 200952
+    },
+    {
+      "profile": {
+        "city_code": "HAN",
+        "name": "Hanoi",
+        "country_code": "VN",
+        "timezone": "Asia/Ho_Chi_Minh",
+        "tourism_score": 0.5190132441217529,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 64,
+      "landmarks": 3,
+      "population": 1431270
+    },
+    {
+      "profile": {
+        "city_code": "SGN",
+        "name": "Ho Chi Minh City",
+        "country_code": "VN",
+        "timezone": "Asia/Ho_Chi_Minh",
+        "tourism_score": 0.4805663586950925,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 51,
+      "landmarks": 0,
+      "population": 3467331
+    },
+    {
+      "profile": {
+        "city_code": "JKT",
+        "name": "Jakarta",
+        "country_code": "ID",
+        "timezone": "Asia/Jakarta",
+        "tourism_score": 0.4924657870427645,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 57,
+      "landmarks": 0,
+      "population": 8540121
+    },
+    {
+      "profile": {
+        "city_code": "DPS",
+        "name": "Denpasar",
+        "country_code": "ID",
+        "timezone": "Asia/Makassar",
+        "tourism_score": 0.3112982416867063,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 10,
+      "landmarks": 0,
+      "population": 834881
+    },
+    {
+      "profile": {
+        "city_code": "MNL",
+        "name": "Manila",
+        "country_code": "PH",
+        "timezone": "Asia/Manila",
+        "tourism_score": 0.6512359075019035,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 146,
+      "landmarks": 34,
+      "population": 1600000
+    },
+    {
+      "profile": {
+        "city_code": "CMB",
+        "name": "Colombo",
+        "country_code": "LK",
+        "timezone": "Asia/Colombo",
+        "tourism_score": 0.4866784183748128,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 54,
+      "landmarks": 0,
+      "population": 648034
+    },
+    {
+      "profile": {
+        "city_code": "KTM",
+        "name": "Kathmandu",
+        "country_code": "NP",
+        "timezone": "Asia/Kathmandu",
+        "tourism_score": 0.5301994499006369,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 45,
+      "landmarks": 12,
+      "population": 1442271
+    },
+    {
+      "profile": {
+        "city_code": "DEL",
+        "name": "Delhi",
+        "country_code": "IN",
+        "timezone": "Asia/Kolkata",
+        "tourism_score": 0.6245978686798727,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 80,
+      "landmarks": 38,
+      "population": 10927986
+    },
+    {
+      "profile": {
+        "city_code": "BOM",
+        "name": "Mumbai",
+        "country_code": "IN",
+        "timezone": "Asia/Kolkata",
+        "tourism_score": 0.4805663586950925,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 21,
+      "landmarks": 10,
+      "population": 12691836
+    },
+    {
+      "profile": {
+        "city_code": "BLR",
+        "name": "Bengaluru",
+        "country_code": "IN",
+        "timezone": "Asia/Kolkata",
+        "tourism_score": 0.4546673190502997,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 34,
+      "landmarks": 2,
+      "population": 5104047
+    },
+    {
+      "profile": {
+        "city_code": "DXB",
+        "name": "Dubai",
+        "country_code": "AE",
+        "timezone": "Asia/Dubai",
+        "tourism_score": 0.2253801766881065,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 4,
+      "landmarks": 0,
+      "population": 2956587
+    },
+    {
+      "profile": {
+        "city_code": "AUH",
+        "name": "Abu Dhabi",
+        "country_code": "AE",
+        "timezone": "Asia/Dubai",
+        "tourism_score": 0.35873477817121185,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 16,
+      "landmarks": 0,
+      "population": 603492
+    },
+    {
+      "profile": {
+        "city_code": "DOH",
+        "name": "Doha",
+        "country_code": "QA",
+        "timezone": "Asia/Qatar",
+        "tourism_score": 0.39631198754835983,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 23,
+      "landmarks": 0,
+      "population": 344939
+    },
+    {
+      "profile": {
+        "city_code": "JED",
+        "name": "Jeddah",
+        "country_code": "SA",
+        "timezone": "Asia/Riyadh",
+        "tourism_score": 0.3112982416867063,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 7,
+      "landmarks": 1,
+      "population": 2867446
+    },
+    {
+      "profile": {
+        "city_code": "TLV",
+        "name": "Tel Aviv",
+        "country_code": "IL",
+        "timezone": "Asia/Jerusalem",
+        "tourism_score": 0.7325214476897545,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 242,
+      "landmarks": 94,
+      "population": 432892
+    },
+    {
+      "profile": {
+        "city_code": "AMM",
+        "name": "Amman",
+        "country_code": "JO",
+        "timezone": "Asia/Amman",
+        "tourism_score": 0.45985733948073193,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 39,
+      "landmarks": 1,
+      "population": 1275857
+    },
+    {
+      "profile": {
+        "city_code": "BEY",
+        "name": "Beirut",
+        "country_code": "LB",
+        "timezone": "Asia/Beirut",
+        "tourism_score": 0.467206404424843,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 45,
+      "landmarks": 0,
+      "population": 1916100
+    },
+    {
+      "profile": {
+        "city_code": "CAI",
+        "name": "Cairo",
+        "country_code": "EG",
+        "timezone": "Africa/Cairo",
+        "tourism_score": 0.6337062989750653,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 130,
+      "landmarks": 27,
+      "population": 7734614
+    },
+    {
+      "profile": {
+        "city_code": "RAK",
+        "name": "Marrakesh",
+        "country_code": "MA",
+        "timezone": "Africa/Casablanca",
+        "tourism_score": 0.575265265675074,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 6,
+      "landmarks": 39,
+      "population": 839296
+    },
+    {
+      "profile": {
+        "city_code": "CMN",
+        "name": "Casablanca",
+        "country_code": "MA",
+        "timezone": "Africa/Casablanca",
+        "tourism_score": 0.4463871476385058,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 13,
+      "landmarks": 8,
+      "population": 3144909
+    },
+    {
+      "profile": {
+        "city_code": "CPT",
+        "name": "Cape Town",
+        "country_code": "ZA",
+        "timezone": "Africa/Johannesburg",
+        "tourism_score": 0.5892655269620879,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 53,
+      "landmarks": 29,
+      "population": 3433441
+    },
+    {
+      "profile": {
+        "city_code": "JNB",
+        "name": "Johannesburg",
+        "country_code": "ZA",
+        "timezone": "Africa/Johannesburg",
+        "tourism_score": 0.4492176919917661,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 26,
+      "landmarks": 4,
+      "population": 2026469
+    },
+    {
+      "profile": {
+        "city_code": "NBO",
+        "name": "Nairobi",
+        "country_code": "KE",
+        "timezone": "Africa/Nairobi",
+        "tourism_score": 0.4131097610168677,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 27,
+      "landmarks": 0,
+      "population": 2750547
+    },
+    {
+      "profile": {
+        "city_code": "ZNZ",
+        "name": "Zanzibar",
+        "country_code": "TZ",
+        "timezone": "Africa/Dar_es_Salaam",
+        "tourism_score": 0.45985733948073193,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 3,
+      "landmarks": 13,
+      "population": 403658
+    },
+    {
+      "profile": {
+        "city_code": "MLE",
+        "name": "Male",
+        "country_code": "MV",
+        "timezone": "Indian/Maldives",
+        "tourism_score": 0.20106426170067448,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 3,
+      "landmarks": 0,
+      "population": 103693
+    },
+    {
+      "profile": {
+        "city_code": "TAS",
+        "name": "Tashkent",
+        "country_code": "UZ",
+        "timezone": "Asia/Tashkent",
+        "tourism_score": 0.4924657870427645,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 57,
+      "landmarks": 0,
+      "population": 1978028
+    },
+    {
+      "profile": {
+        "city_code": "ALA",
+        "name": "Almaty",
+        "country_code": "KZ",
+        "timezone": "Asia/Almaty",
+        "tourism_score": 0.4519765692391182,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 36,
+      "landmarks": 1,
+      "population": 2000900
+    },
+    {
+      "profile": {
+        "city_code": "BAK",
+        "name": "Baku",
+        "country_code": "AZ",
+        "timezone": "Asia/Baku",
+        "tourism_score": 0.5915597133960452,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 119,
+      "landmarks": 8,
+      "population": 1116513
+    },
+    {
+      "profile": {
+        "city_code": "TBS",
+        "name": "Tbilisi",
+        "country_code": "GE",
+        "timezone": "Asia/Tbilisi",
+        "tourism_score": 0.5770088201612268,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 104,
+      "landmarks": 7,
+      "population": 1049498
+    },
+    {
+      "profile": {
+        "city_code": "EVN",
+        "name": "Yerevan",
+        "country_code": "AM",
+        "timezone": "Asia/Yerevan",
+        "tourism_score": 0.7216153701643816,
+        "minimum_visit_hours": 3.0,
+        "rewarding_visit_hours": 16.0,
+        "hotel_per_night": null,
+        "visas": []
+      },
+      "notable": 162,
+      "landmarks": 104,
+      "population": 1093485
+    }
+  ]
+}

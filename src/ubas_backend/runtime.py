@@ -32,10 +32,13 @@ class Runtime:
     pool: asyncpg.Pool
     manager: QueryManager
     worker: QueryWorker | None
+    catalog: SqliteCatalog | None
 
     async def close(self) -> None:
         if self.worker is not None:
             await self.worker.stop()
+        if self.catalog is not None:
+            await self.catalog.dispose()
         await self.pool.close()
 
 
@@ -47,14 +50,18 @@ async def create_runtime(settings: Settings, *, include_worker: bool) -> Runtime
             lease_duration=settings.worker_lease_duration,
             max_attempts=settings.worker_max_attempts,
         )
-        worker = None
-        if include_worker:
-            if settings.catalog_path is None or not settings.catalog_path.is_file():
+        catalog: SqliteCatalog | None = None
+        if settings.catalog_path is not None:
+            if not settings.catalog_path.is_file():
                 raise RuntimeError(
                     f"Catalog database does not exist: {settings.catalog_path}"
                 )
-            provider = _load_provider(settings.flight_provider_factory)
             catalog = SqliteCatalog(settings.catalog_path)
+        worker = None
+        if include_worker:
+            if catalog is None:
+                raise RuntimeError("Catalog database is not configured")
+            provider = _load_provider(settings.flight_provider_factory)
             planner: Planner = RoutePlanner(provider, catalog, catalog)
             worker = QueryWorker(
                 repository,
@@ -68,4 +75,9 @@ async def create_runtime(settings: Settings, *, include_worker: bool) -> Runtime
     except Exception:
         await pool.close()
         raise
-    return Runtime(pool=pool, manager=QueryManager(repository), worker=worker)
+    return Runtime(
+        pool=pool,
+        manager=QueryManager(repository),
+        worker=worker,
+        catalog=catalog,
+    )

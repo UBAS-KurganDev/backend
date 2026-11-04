@@ -129,8 +129,8 @@ async def main() -> None:
     )
     with TemporaryDirectory(prefix="ubas-demo-") as directory:
         catalog = SqliteCatalog(Path(directory) / "catalog.sqlite3")
-        catalog.initialize()
-        catalog.upsert(
+        await catalog.initialize()
+        await catalog.upsert(
             CatalogData(
                 cities=(city,),
                 links=(

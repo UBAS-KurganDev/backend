@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
+from ubas_backend.api.cities import router as cities_router
 from ubas_backend.api.router import router
 from ubas_backend.runtime import Runtime, create_runtime
 from ubas_backend.settings import Settings
@@ -18,6 +19,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         settings, include_worker=settings.embedded_worker
     )
     app.state.query_manager = runtime.manager
+    app.state.catalog = runtime.catalog
     if runtime.worker is not None:
         runtime.worker.start()
     try:
@@ -29,6 +31,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     app = FastAPI(title="UBAS Backend", lifespan=lifespan)
     app.include_router(router, prefix="/api/v1")
+    app.include_router(cities_router, prefix="/api/v1")
     return app
 
 
