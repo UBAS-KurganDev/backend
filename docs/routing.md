@@ -1,5 +1,8 @@
 # Планировщик MVP: контракт и настройки
 
+Реальный адаптер agent.ru, формат источника и ограничения покрытия описаны
+в [agent-scraper.md](agent-scraper.md).
+
 Источник требований — [MVP](https://github.com/UBAS-KurganDev/docs/blob/d4d838879c6e054bd4acac22e2678dbfc8c8cf1a/mvp.md)
 и [критерии приёмки](https://github.com/UBAS-KurganDev/docs/blob/d4d838879c6e054bd4acac22e2678dbfc8c8cf1a/Критерии%20приёмки%20MVP.md).
 Эти документы приоритетнее старого описания одной туристической остановки.
