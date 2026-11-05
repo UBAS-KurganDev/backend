@@ -12,7 +12,7 @@ from ubas_backend.query_manager.service import QueryManager
 from ubas_backend.query_manager.worker import QueryWorker
 from ubas_backend.routing.planner import RoutePlanner
 from ubas_backend.routing.policy import RequestPolicy
-from ubas_backend.routing.ports import AsyncCloseable, FlightProvider
+from ubas_backend.routing.ports import AsyncCloseable, CityDirectory, FlightProvider
 from ubas_backend.routing.storage import (
     SqliteCityRepository,
     SqliteGeographyRepository,
@@ -63,6 +63,7 @@ class Runtime:
     manager: QueryManager
     worker: QueryWorker | None
     resources: AsyncExitStack
+    cities: CityDirectory
 
     async def close(self) -> None:
         await self.resources.aclose()
@@ -100,7 +101,13 @@ async def create_runtime(settings: Settings, *, include_worker: bool) -> Runtime
                 execution_timeout=settings.worker_execution_timeout,
             )
             resources.push_async_callback(worker.stop)
-        return Runtime(manager=manager, worker=worker, resources=resources)
+        cities = SqliteCityRepository(
+            settings.catalog_path or Path("var/catalog.sqlite3")
+        )
+        resources.callback(cities.close)
+        return Runtime(
+            manager=manager, worker=worker, resources=resources, cities=cities
+        )
     except BaseException:
         await resources.aclose()
         raise

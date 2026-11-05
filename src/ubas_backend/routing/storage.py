@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import URL, Engine, create_engine, delete, select
+from sqlalchemy import URL, Engine, case, create_engine, delete, func, select
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import NullPool
@@ -40,6 +40,28 @@ class SqliteCatalog:
 
     def close(self) -> None:
         self._engine.dispose()
+
+    def update_tourism(self, cities: tuple[CityProfile, ...]) -> None:
+        """Atomically update scores; existing geography, visas and links survive."""
+        with Session(self._engine) as session, session.begin():
+            for city in cities:
+                statement = insert(CityRow).values(
+                    city_code=city.city_code, profile_json=city.model_dump_json()
+                )
+                session.execute(
+                    statement.on_conflict_do_update(
+                        index_elements=[CityRow.city_code],
+                        set_={
+                            "profile_json": func.json_set(
+                                CityRow.profile_json,
+                                "$.tourism_score",
+                                city.tourism_score,
+                                "$.profile_version",
+                                2,
+                            )
+                        },
+                    )
+                )
 
     def upsert(self, data: CatalogData) -> None:
         with Session(self._engine) as session, session.begin():
@@ -149,6 +171,24 @@ class SqliteCityRepository:
     def close(self) -> None:
         self._engine.dispose()
 
+    async def list_by_tourism(
+        self, *, limit: int = 100, min_tourism_score: float = 0
+    ) -> tuple[CityProfile, ...]:
+        def read() -> tuple[CityProfile, ...]:
+            raw_score = func.json_extract(CityRow.profile_json, "$.tourism_score")
+            version = func.json_extract(CityRow.profile_json, "$.profile_version")
+            score = case((version.is_(None), raw_score * 100), else_=raw_score)
+            with Session(self._engine) as session:
+                rows = session.scalars(
+                    select(CityRow.profile_json)
+                    .where(score >= min_tourism_score)
+                    .order_by(score.desc(), CityRow.city_code)
+                    .limit(limit)
+                )
+                return tuple(_city_profile(raw) for raw in rows)
+
+        return await asyncio.to_thread(read)
+
     async def get_many(self, city_codes: tuple[str, ...]) -> tuple[CityProfile, ...]:
         def read() -> tuple[CityProfile, ...]:
             result: list[CityProfile] = []
@@ -161,14 +201,17 @@ class SqliteCityRepository:
                         .order_by(CityRow.city_code)
                     )
                     for item in profiles:
-                        data = json.loads(item)
-                        # Old catalog JSON used a 0..1 scale; normalize at the boundary.
-                        if "profile_version" not in data:
-                            data["tourism_score"] *= 100
-                        result.append(CityProfile.model_validate(data))
+                        result.append(_city_profile(item))
             return tuple(result)
 
         return await asyncio.to_thread(read)
+
+
+def _city_profile(raw: str) -> CityProfile:
+    data = json.loads(raw)
+    if "profile_version" not in data:
+        data["tourism_score"] *= 100
+    return CityProfile.model_validate(data)
 
 
 class SqliteGeographyRepository:

@@ -20,6 +20,7 @@ dependencies = [
 
 [project.scripts]
 ubas-api = "ubas_backend.main:main"
+ubas-import-cities = "ubas_backend.import_cities:main"
 ubas-migrate = "ubas_backend.migrate:main"
 ubas-worker = "ubas_backend.worker:main"
 

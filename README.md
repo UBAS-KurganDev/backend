@@ -16,6 +16,8 @@ SQLAlchemy ORM/Core, Alembic. Зависимости через uv; Ruff и ст
 
 ## Документация
 
+- [Импорт туристической привлекательности](docs/tourism-import.md), формула и HTTP городов.
+
 - [Устройство](docs/architecture.md), [контракты и настройки](docs/routing.md).
 - [Алгоритм и безопасные отсечения](docs/planner-search.md).
 - [Новый контракт для фронта](docs/direct-routes.md).

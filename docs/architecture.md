@@ -67,3 +67,11 @@ SQLite содержит направленные связи и профили. �
 - [repositories.md](repositories.md): замена источников обычным кодом.
 - [query-manager.md](query-manager.md): HTTP, очередь и deployment.
 - [mvp-coverage.md](mvp-coverage.md): проверенные сценарии и границы реализации.
+
+## Туристический источник
+
+`import_cities.py` собирает офлайн-снимок OpenTripMap. `SqliteCatalog.update_tourism`
+обновляет только оценки, сохраняя существующую схему, визы и географию.
+`CityDirectory` расширяет порт чтения профилей для HTTP `/api/v1/cities`;
+сам планнер по-прежнему зависит только от `CityRepository`.
+Подробности: [импорт привлекательности](tourism-import.md).

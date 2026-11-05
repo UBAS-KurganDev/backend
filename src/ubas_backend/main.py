@@ -7,6 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from ubas_backend.api.cities import router as cities_router
 from ubas_backend.api.router import router
 from ubas_backend.runtime import Runtime, create_runtime
 from ubas_backend.settings import Settings, load_cors_origins
@@ -19,6 +20,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         settings, include_worker=settings.embedded_worker
     )
     app.state.query_manager = runtime.manager
+    app.state.cities = runtime.cities
     if runtime.worker is not None:
         runtime.worker.start()
     try:
@@ -37,6 +39,7 @@ def create_app(*, cors_origins: tuple[str, ...] | None = None) -> FastAPI:
         expose_headers=["Location", "Retry-After"],
     )
     app.include_router(router, prefix="/api/v1")
+    app.include_router(cities_router, prefix="/api/v1")
     return app
 
 
