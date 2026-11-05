@@ -392,7 +392,7 @@ class HopBoundTests(unittest.IsolatedAsyncioTestCase):
                 set(cities_on_paths(edges, "AAA", "ZZZ", 4)), expected, seed
             )
 
-    async def test_dead_ends_do_not_consume_hub_budget_but_real_candidates_do(self):
+    async def test_discovery_precedes_hub_selection_and_has_separate_budget(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "catalog.sqlite3"
             catalog = SqliteCatalog(path)
@@ -433,6 +433,10 @@ class HopBoundTests(unittest.IsolatedAsyncioTestCase):
                 )
                 diagnostics = SearchDiagnostics()
                 await discover_cities(repo, req, PlannerConfig(max_hubs=1), diagnostics)
+                self.assertTrue(diagnostics.complete)
+                await discover_cities(
+                    repo, req, PlannerConfig(max_topology_cities=3), diagnostics
+                )
                 self.assertFalse(diagnostics.complete)
             finally:
                 repo.close()

@@ -281,10 +281,19 @@ class RankedRoute(Model):
     score: RouteScore | None = None
 
 
+class SearchScope(Model):
+    strategy: Literal["tourism_then_connectivity"] = "tourism_then_connectivity"
+    candidate_hubs: int = Field(ge=0)
+    selected_hubs: tuple[Code, ...]
+    max_hubs: int = Field(ge=1)
+    limited: bool
+
+
 class PlanResult(Model):
     schema_version: Literal[1, 2] = 2
     routes: tuple[RankedRoute, ...]
     searched_cities: tuple[str, ...]
+    search_scope: SearchScope | None = None
     evaluated_candidates: int
     rejected: dict[str, int]
     complete: bool

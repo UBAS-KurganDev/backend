@@ -154,13 +154,13 @@ class SearchTests(unittest.IsolatedAsyncioTestCase):
             ):
                 await plan(offers, config=PlannerConfig(**changes))
 
-    async def test_topology_limit_is_not_reported_as_complete(self):
+    async def test_discovery_budget_is_not_reported_as_complete(self):
         offers = [
             offer("a", [segment("AAA", "BBB")]),
             offer("b", [segment("AAA", "CCC")]),
         ]
-        with self.assertRaisesRegex(IncompleteSearchError, "topology_city_limit"):
-            await plan(offers, config=PlannerConfig(max_hubs=1))
+        with self.assertRaisesRegex(IncompleteSearchError, "topology_discovery_limit"):
+            await plan(offers, config=PlannerConfig(max_topology_cities=2))
 
     async def test_paths_with_repeated_city_remain_searchable(self):
         offers = [
