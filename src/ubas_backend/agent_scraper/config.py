@@ -1,5 +1,7 @@
 """Scraper settings; environment is supplied by the launcher, not read on import."""
 
+from pathlib import Path
+
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -8,6 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="UBAS_AGENT_", extra="ignore")
 
     headless: bool = True
+    topology_snapshot_path: Path | None = None
     redis_url: SecretStr | None = None
     # Operational cache retention, not a promise that a fare is still available.
     cache_ttl_seconds: int = Field(default=1800, ge=1, le=172800)

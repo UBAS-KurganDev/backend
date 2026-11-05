@@ -36,3 +36,4 @@ var/
 # Generated catalogs (prepare demo data with routing.demo --catalog).
 var/*.sqlite3
 var/*.sqlite3-*
+var/topology/

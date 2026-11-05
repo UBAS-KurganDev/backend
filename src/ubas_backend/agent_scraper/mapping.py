@@ -7,6 +7,7 @@ offers/ow_offers -> carrier.offers -> group.segments (purchase alternatives)
 
 import hashlib
 import re
+from collections.abc import Callable
 from datetime import UTC, date, datetime, time
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -29,6 +30,9 @@ class MappingFailure(ValueError):
     pass
 
 
+type AirportLookup = Callable[[str], Airport | None]
+
+
 def _text(value: Any) -> str:
     if not isinstance(value, str) or not value.strip():
         raise MappingFailure("missing_field")
@@ -41,8 +45,8 @@ def _objects(value: Any) -> list[dict[str, Any]]:
     return value
 
 
-def _airport(value: Any) -> Airport:
-    airport = airport_for_code(_text(value))
+def _airport(value: Any, lookup: AirportLookup) -> Airport:
+    airport = lookup(_text(value))
     if airport is None:
         raise MappingFailure("unknown_airport")
     return airport
@@ -65,13 +69,13 @@ def _schedule(flight: dict[str, Any], side: str, airport: Airport) -> datetime:
     return value
 
 
-def _segment(flight: dict[str, Any]) -> FlightSegment:
+def _segment(flight: dict[str, Any], lookup: AirportLookup) -> FlightSegment:
     if flight.get("service_class") not in ("Эконом", "Economy"):
         raise MappingFailure("unsupported_cabin")
     if flight.get("techstop") or flight.get("vehicle_type") != "aircraft":
         raise MappingFailure("unsupported_flight")
-    origin = _airport(flight.get("departure_airport"))
-    destination = _airport(flight.get("arrival_airport"))
+    origin = _airport(flight.get("departure_airport"), lookup)
+    destination = _airport(flight.get("arrival_airport"), lookup)
     return FlightSegment(
         origin=origin,
         destination=destination,
@@ -117,6 +121,7 @@ def _ticket(
     captured: CapturedOffers,
     currency: str,
     occurrence: str,
+    lookup: AirportLookup,
 ) -> TicketOffer | None:
     if raw.get("dir_number") != 1:
         raise MappingFailure("unsupported_direction")
@@ -133,7 +138,7 @@ def _ticket(
         or details[0].get("qty") != 1
     ):
         raise MappingFailure("passengers_mismatch")
-    segments = tuple(_segment(flight) for flight in flights)
+    segments = tuple(_segment(flight, lookup) for flight in flights)
     if (
         segments[0].origin.code != request.origin
         or segments[-1].destination.code != request.destination
@@ -160,7 +165,10 @@ def _ticket(
 
 
 def map_response(
-    captured: CapturedOffers, request: SearchRequest
+    captured: CapturedOffers,
+    request: SearchRequest,
+    *,
+    airport_lookup: AirportLookup = airport_for_code,
 ) -> FlightSearchResult:
     data = captured.data
     if data.get("status") != "Ready":
@@ -182,6 +190,7 @@ def map_response(
                                 captured,
                                 currency,
                                 f"{section}:{group_index}:{index}:{number}",
+                                airport_lookup,
                             )
                             if ticket is not None:
                                 offers.append(ticket)

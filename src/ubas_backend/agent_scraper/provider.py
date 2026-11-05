@@ -5,7 +5,8 @@ from datetime import UTC, date, datetime
 from itertools import product
 from zoneinfo import ZoneInfo
 
-from ubas_backend.agent_scraper.airports import airports_for_city
+from ubas_backend.agent_scraper.airports import AirportDirectory, default_directory
+from ubas_backend.agent_scraper.config import Settings
 from ubas_backend.agent_scraper.mapping import map_response
 from ubas_backend.agent_scraper.models import SearchRequest
 from ubas_backend.agent_scraper.service import FlightSearchService
@@ -26,12 +27,20 @@ def _next_occurrence(day: date, today: date) -> date | None:
 
 
 class AgentFlightProvider:
-    def __init__(self, service: FlightSearchService | None = None) -> None:
+    def __init__(
+        self,
+        service: FlightSearchService | None = None,
+        *,
+        airports: AirportDirectory | None = None,
+    ) -> None:
         self._service = service or FlightSearchService()
+        self._airports = airports or default_directory()
 
     async def _search_airports(self, request: SearchRequest) -> FlightSearchResult:
         captured = await self._service.get_offers(request)
-        return map_response(captured, request)
+        return map_response(
+            captured, request, airport_lookup=self._airports.airport_for_code
+        )
 
     async def search(self, query: FlightQuery) -> FlightSearchResult:
         if query.passengers != 1 or query.currency != "RUB":
@@ -41,8 +50,8 @@ class AgentFlightProvider:
             return FlightSearchResult(
                 complete=False, warnings=("agent_requires_single_day",)
             )
-        origins = airports_for_city(query.origin)
-        destinations = airports_for_city(query.destination)
+        origins = self._airports.airports_for_city(query.origin)
+        destinations = self._airports.airports_for_city(query.destination)
         if not origins or not destinations:
             raise FlightProviderError("agent_unsupported_city")
         today = datetime.now(UTC).astimezone(ZoneInfo(origins[0].timezone)).date()
@@ -93,4 +102,23 @@ class AgentFlightProvider:
 
 
 def create_flight_provider() -> AgentFlightProvider:
-    return AgentFlightProvider()
+    settings = Settings()
+    airports = None
+    if settings.topology_snapshot_path is not None:
+        from ubas_backend.topology.models import Snapshot
+
+        snapshot = Snapshot.model_validate_json(
+            settings.topology_snapshot_path.read_bytes()
+        )
+        airports = AirportDirectory(
+            snapshot.airports,
+            frozenset(
+                airport.code
+                for airport in snapshot.airports
+                if airport.flightable and airport.city_code in snapshot.covered_cities
+            ),
+            fallback=default_directory(),
+        )
+    return AgentFlightProvider(
+        FlightSearchService(settings=settings), airports=airports
+    )

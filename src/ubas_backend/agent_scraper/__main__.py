@@ -5,12 +5,12 @@ import asyncio
 import json
 from datetime import date
 
-from ubas_backend.agent_scraper.provider import AgentFlightProvider
+from ubas_backend.agent_scraper.provider import create_flight_provider
 from ubas_backend.routing.schemas import FlightQuery
 
 
 async def search(origin: str, destination: str, day: date) -> None:
-    provider = AgentFlightProvider()
+    provider = create_flight_provider()
     try:
         result = await provider.search(
             FlightQuery(
