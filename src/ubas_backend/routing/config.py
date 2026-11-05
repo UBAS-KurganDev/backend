@@ -17,6 +17,8 @@ class PlannerConfig(Model):
         default_factory=lambda: {"RUB": Decimal(1)}
     )
     max_hubs: int = Field(ge=1, default=30)
+    max_topology_cities: int = Field(ge=2, default=2000)
+    max_topology_edges: int = Field(ge=1, default=100_000)
     max_offers_per_query: int = Field(ge=1, default=200)
     max_offers_per_search: int = Field(ge=1, default=2000)
     max_total_offers: int = Field(ge=1, default=50_000)
