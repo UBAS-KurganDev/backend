@@ -49,6 +49,14 @@ class CityRepository(Protocol):
         ...
 
 
+class CityDirectory(CityRepository, Protocol):
+    """Read-only catalog browsing; not required by the route planner."""
+
+    async def list_by_tourism(
+        self, *, limit: int = 100, min_tourism_score: float = 0
+    ) -> tuple[CityProfile, ...]: ...
+
+
 class CityGeography(Protocol):
     async def timezone(self, city_code: str) -> str | None:
         """Origin timezone for local date validation, independent of tourism."""
