@@ -524,6 +524,17 @@ class ModelAndCatalogTests(unittest.TestCase):
         self.assertEqual(
             _next_occurrence(date(2027, 1, 1), date(2026, 12, 31)), date(2027, 1, 1)
         )
+        # February 29 is found in the next leap year within the search window.
+        self.assertEqual(
+            _next_occurrence(date(2028, 2, 29), date(2026, 11, 5)), date(2028, 2, 29)
+        )
+        # After this year's Feb 29 the next occurrence is the next leap year.
+        self.assertEqual(
+            _next_occurrence(date(2028, 2, 29), date(2028, 3, 1)), date(2032, 2, 29)
+        )
+        self.assertEqual(
+            _next_occurrence(date(2096, 2, 29), date(2097, 1, 1)), date(2104, 2, 29)
+        )
 
     def test_airport_registry_timezones_and_city_identity(self):
         self.assertEqual(airport_for_code("LED").timezone, "Europe/Moscow")

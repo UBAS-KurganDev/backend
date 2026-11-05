@@ -15,7 +15,8 @@ from ubas_backend.routing.schemas import FlightQuery, FlightSearchResult, Ticket
 
 
 def _next_occurrence(day: date, today: date) -> date | None:
-    for year in (today.year, today.year + 1):
+    # February 29 may be up to 8 years away, e.g. 2096 -> 2104.
+    for year in range(today.year, today.year + 9):
         try:
             candidate = day.replace(year=year)
         except ValueError:
