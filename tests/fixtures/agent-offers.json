@@ -1,0 +1,1183 @@
+[
+  {
+    "request_id": "fixture-search",
+    "status": "InProcess",
+    "currency": "RUB",
+    "next_token": "page-1",
+    "offers": [],
+    "ow_offers": []
+  },
+  {
+    "request_id": "fixture-search",
+    "status": "InProcess",
+    "currency": "RUB",
+    "next_token": "page-2",
+    "offers": [
+      {
+        "min_price": 17846,
+        "offers": [
+          {
+            "min_price": 17846,
+            "segments": [
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 17846,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "NO",
+                "buy_id": "fixture-ticket-1",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "VKO",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:00",
+                    "arrival_local_time": "07:40",
+                    "marketing_airline_code": "DP",
+                    "operating_airline_code": "DP",
+                    "flight_number": "408",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "NO"
+                  },
+                  {
+                    "departure_airport": "VKO",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "09:50",
+                    "arrival_local_time": "15:00",
+                    "marketing_airline_code": "DP",
+                    "operating_airline_code": "DP",
+                    "flight_number": "839",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "NO"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 40637,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "23Kg",
+                "buy_id": "fixture-ticket-2",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "SVO",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "06:00",
+                    "arrival_local_time": "06:40",
+                    "marketing_airline_code": "DP",
+                    "operating_airline_code": "DP",
+                    "flight_number": "6542",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "23Kg"
+                  },
+                  {
+                    "departure_airport": "SVO",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "10:55",
+                    "arrival_local_time": "16:30",
+                    "marketing_airline_code": "SU",
+                    "operating_airline_code": "SU",
+                    "flight_number": "2142",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "23Kg"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "min_price": 21206,
+        "offers": [
+          {
+            "min_price": 21206,
+            "segments": [
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 21206,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "NO",
+                "buy_id": "fixture-ticket-3",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "GYD",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "02:50",
+                    "arrival_local_time": "05:25",
+                    "marketing_airline_code": "J2",
+                    "operating_airline_code": "J2",
+                    "flight_number": "646",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "NO"
+                  },
+                  {
+                    "departure_airport": "GYD",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:55",
+                    "arrival_local_time": "10:00",
+                    "marketing_airline_code": "J2",
+                    "operating_airline_code": "J2",
+                    "flight_number": "25",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "NO"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "min_price": 26944,
+        "offers": [
+          {
+            "min_price": 26944,
+            "segments": [
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 26944,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "NO",
+                "buy_id": "fixture-ticket-4",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "KRR",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "14:00",
+                    "arrival_local_time": "16:05",
+                    "marketing_airline_code": "U6",
+                    "operating_airline_code": "U6",
+                    "flight_number": "209",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "NO"
+                  },
+                  {
+                    "departure_airport": "KRR",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "19:15",
+                    "arrival_local_time": "21:45",
+                    "marketing_airline_code": "A4",
+                    "operating_airline_code": "A4",
+                    "flight_number": "3051",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "NO"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "min_price": 28889,
+        "offers": [
+          {
+            "min_price": 28889,
+            "segments": [
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 28889,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "0Kg",
+                "buy_id": "fixture-ticket-5",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "SVO",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "13:55",
+                    "arrival_local_time": "14:35",
+                    "marketing_airline_code": "SU",
+                    "operating_airline_code": "SU",
+                    "flight_number": "1401",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "0Kg"
+                  },
+                  {
+                    "departure_airport": "SVO",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-19",
+                    "arrival_date": "2026-11-19",
+                    "departure_local_time": "10:55",
+                    "arrival_local_time": "16:30",
+                    "marketing_airline_code": "SU",
+                    "operating_airline_code": "SU",
+                    "flight_number": "2142",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "0Kg"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 30039,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "0Kg",
+                "buy_id": "fixture-ticket-6",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "SVO",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "08:30",
+                    "arrival_local_time": "09:20",
+                    "marketing_airline_code": "SU",
+                    "operating_airline_code": "SU",
+                    "flight_number": "1407",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "0Kg"
+                  },
+                  {
+                    "departure_airport": "SVO",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "10:55",
+                    "arrival_local_time": "16:30",
+                    "marketing_airline_code": "SU",
+                    "operating_airline_code": "SU",
+                    "flight_number": "2142",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "0Kg"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "ow_offers": []
+  },
+  {
+    "request_id": "fixture-search",
+    "status": "Ready",
+    "currency": "RUB",
+    "next_token": "page-3",
+    "offers": [
+      {
+        "min_price": 20504,
+        "offers": [
+          {
+            "min_price": 20504,
+            "segments": [
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 20504,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "0PC",
+                "buy_id": "fixture-ticket-7",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "GYD",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "02:50",
+                    "arrival_local_time": "05:25",
+                    "marketing_airline_code": "J2",
+                    "operating_airline_code": "J2",
+                    "flight_number": "646",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "0PC"
+                  },
+                  {
+                    "departure_airport": "GYD",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:55",
+                    "arrival_local_time": "10:00",
+                    "marketing_airline_code": "J2",
+                    "operating_airline_code": "J2",
+                    "flight_number": "25",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "0PC"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "min_price": 52238,
+        "offers": [
+          {
+            "min_price": 52238,
+            "segments": [
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-8",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "13:00",
+                    "arrival_local_time": "14:20",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2416",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-9",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "13:45",
+                    "arrival_local_time": "15:05",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2418",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-10",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "14:45",
+                    "arrival_local_time": "16:05",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2420",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-11",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "15:40",
+                    "arrival_local_time": "17:00",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2422",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-12",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "16:45",
+                    "arrival_local_time": "18:05",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2424",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-13",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "19:25",
+                    "arrival_local_time": "20:45",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2428",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-14",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "20:10",
+                    "arrival_local_time": "21:35",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2430",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-15",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "22:10",
+                    "arrival_local_time": "23:30",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2432",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 52238,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-16",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "16:50",
+                    "arrival_local_time": "20:10",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "273",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "22:10",
+                    "arrival_local_time": "23:30",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2432",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 65442,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-17",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "07:40",
+                    "arrival_local_time": "11:00",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "271",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-19",
+                    "arrival_date": "2026-11-19",
+                    "departure_local_time": "02:05",
+                    "arrival_local_time": "03:35",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2444",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 65442,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "1PC",
+                "buy_id": "fixture-ticket-18",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "TAS",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "00:30",
+                    "arrival_local_time": "03:20",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "9662",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "TAS",
+                    "arrival_airport": "IST",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "16:50",
+                    "arrival_local_time": "20:10",
+                    "marketing_airline_code": "HY",
+                    "operating_airline_code": "HY",
+                    "flight_number": "273",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  },
+                  {
+                    "departure_airport": "IST",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-19",
+                    "arrival_date": "2026-11-19",
+                    "departure_local_time": "02:05",
+                    "arrival_local_time": "03:35",
+                    "marketing_airline_code": "TK",
+                    "operating_airline_code": "TK",
+                    "flight_number": "2444",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "1PC"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "min_price": 175151,
+        "offers": [
+          {
+            "min_price": 175151,
+            "segments": [
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 175151,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "30KG",
+                "buy_id": "fixture-ticket-19",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "DXB",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "08:15",
+                    "arrival_local_time": "13:40",
+                    "marketing_airline_code": "EK",
+                    "operating_airline_code": "FZ",
+                    "flight_number": "2307",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "30KG"
+                  },
+                  {
+                    "departure_airport": "DXB",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-19",
+                    "arrival_date": "2026-11-19",
+                    "departure_local_time": "02:45",
+                    "arrival_local_time": "06:30",
+                    "marketing_airline_code": "PC",
+                    "operating_airline_code": "PC",
+                    "flight_number": "5171",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "30KG"
+                  }
+                ]
+              },
+              {
+                "dir_number": 1,
+                "departure_airport": "SVX",
+                "arrival_airport": "AYT",
+                "price": 338540,
+                "price_details": [
+                  {
+                    "passenger_type": "adult",
+                    "qty": 1
+                  }
+                ],
+                "baggage": "35KG",
+                "buy_id": "fixture-ticket-20",
+                "flights_info": [
+                  {
+                    "departure_airport": "SVX",
+                    "arrival_airport": "DXB",
+                    "departure_date": "2026-11-18",
+                    "arrival_date": "2026-11-18",
+                    "departure_local_time": "02:20",
+                    "arrival_local_time": "07:45",
+                    "marketing_airline_code": "EK",
+                    "operating_airline_code": "FZ",
+                    "flight_number": "2039",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "35KG"
+                  },
+                  {
+                    "departure_airport": "DXB",
+                    "arrival_airport": "AYT",
+                    "departure_date": "2026-11-19",
+                    "arrival_date": "2026-11-19",
+                    "departure_local_time": "02:45",
+                    "arrival_local_time": "06:30",
+                    "marketing_airline_code": "PC",
+                    "operating_airline_code": "PC",
+                    "flight_number": "5171",
+                    "service_class": "Эконом",
+                    "techstop": false,
+                    "vehicle_type": "aircraft",
+                    "baggage": "35KG"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "ow_offers": []
+  }
+]

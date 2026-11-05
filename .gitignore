@@ -25,6 +25,14 @@ coverage.xml
 .DS_Store
 Thumbs.db
 
+# agent_scraper runtime artifacts (browser profile, captured data, reports)
+src/ubas_backend/agent_scraper/browser_user_data/
+src/ubas_backend/agent_scraper/captured_data/
+src/ubas_backend/agent_scraper/exported_reports/
+
+# Local runtime data (SQLite catalog seeded by agent_scraper.catalog)
+var/
+
 # Generated catalogs (prepare demo data with routing.demo --catalog).
 var/*.sqlite3
 var/*.sqlite3-*
