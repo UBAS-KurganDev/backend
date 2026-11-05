@@ -84,34 +84,37 @@ async def run_agent_scraper(
             overflow = True
 
     try:
-        async with async_playwright() as playwright:
+        async with (
+            async_playwright() as playwright,
+            asyncio.timeout(settings.timeout_seconds),
+        ):
+            # Launch is inside the timeout so a hung start cannot outlive it.
             browser = await playwright.chromium.launch(headless=settings.headless)
             try:
-                async with asyncio.timeout(settings.timeout_seconds):
-                    context = await browser.new_context()
-                    page = await context.new_page()
-                    page.on("response", on_response)
-                    await page.goto(request.search_url, wait_until="domcontentloaded")
-                    accumulator = ResponseAccumulator()
-                    size = 0
-                    fetched_at: datetime | None = None
-                    for _ in range(settings.max_response_batches):
-                        response, received_at = await responses.get()
-                        fetched_at = fetched_at or received_at
-                        if overflow or response.status != 200:
-                            raise FlightProviderError("agent_response_unavailable")
-                        body = await response.body()
-                        size += len(body)
-                        if size > 20_000_000:
-                            raise FlightProviderError("agent_response_size_limit")
-                        data = json.loads(body)
-                        if not isinstance(data, dict):
-                            raise FlightProviderError("agent_invalid_response")
-                        if accumulator.add(response.url, data):
-                            return CapturedOffers(
-                                fetched_at=fetched_at, data=accumulator.data
-                            )
-                    raise FlightProviderError("agent_response_batch_limit")
+                context = await browser.new_context()
+                page = await context.new_page()
+                page.on("response", on_response)
+                await page.goto(request.search_url, wait_until="domcontentloaded")
+                accumulator = ResponseAccumulator()
+                size = 0
+                fetched_at: datetime | None = None
+                for _ in range(settings.max_response_batches):
+                    response, received_at = await responses.get()
+                    fetched_at = fetched_at or received_at
+                    if overflow or response.status != 200:
+                        raise FlightProviderError("agent_response_unavailable")
+                    body = await response.body()
+                    size += len(body)
+                    if size > 20_000_000:
+                        raise FlightProviderError("agent_response_size_limit")
+                    data = json.loads(body)
+                    if not isinstance(data, dict):
+                        raise FlightProviderError("agent_invalid_response")
+                    if accumulator.add(response.url, data):
+                        return CapturedOffers(
+                            fetched_at=fetched_at, data=accumulator.data
+                        )
+                raise FlightProviderError("agent_response_batch_limit")
             finally:
                 # Closing the browser closes all contexts even on cancellation.
                 await browser.close()
