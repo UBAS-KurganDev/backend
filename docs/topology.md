@@ -57,11 +57,12 @@ uv run --locked python -m ubas_backend.topology --cities MOW SVX ALA TAS DXB IST
 
 ```dotenv
 UBAS_CATALOG_PATH=./var/topology-catalog.sqlite3
-UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH=./var/topology/expanded-2026-11-05.json
+UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH=./var/topology/initial.json
 ```
 
 В Compose файл уже находится внутри монтируемого ./var. Миграция PostgreSQL не
 нужна для этого изменения; обычная подготовка очереди всё ещё требует ubas-migrate.
+Для расширенного набора укажите вместо initial.json имя его созданного снимка.
 Перезапустите API/worker при изменении пути. Билетный провайдер подключается отдельно;
 сборщик сам не включает и не заменяет его.
 
