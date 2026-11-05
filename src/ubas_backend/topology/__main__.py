@@ -9,11 +9,14 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import httpx
+from pydantic import TypeAdapter
 
+from ubas_backend.routing.schemas import Code
 from ubas_backend.routing.storage import SqliteCatalog
 from ubas_backend.topology.collector import collect
 from ubas_backend.topology.geography import Geography
 from ubas_backend.topology.models import AIRPORTS_URL, CITIES_URL, Snapshot
+from ubas_backend.topology.snapshots import combine_snapshots
 from ubas_backend.topology.source import FlyWhereTo, read_body
 
 
@@ -70,6 +73,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     modes = parser.add_mutually_exclusive_group(required=True)
     modes.add_argument("--cities", nargs="+", help="City IATA codes, e.g. MOW SVX ALA")
+    modes.add_argument("--cities-file", type=Path, help="JSON array of city IATA codes")
+    modes.add_argument(
+        "--merge-snapshots",
+        nargs="+",
+        type=Path,
+        help="Combine disjoint collections without network access",
+    )
     modes.add_argument(
         "--from-snapshot", type=Path, help="Import without network access"
     )
@@ -81,6 +91,14 @@ def main() -> None:
     parser.add_argument("--interval", type=float, default=1)
     args = parser.parse_args()
     input_or_output = args.from_snapshot or args.snapshot
+    if (
+        args.merge_snapshots
+        and args.catalog
+        and any(
+            path.resolve() == args.catalog.resolve() for path in args.merge_snapshots
+        )
+    ):
+        parser.error("Snapshot and catalog must be different files")
     if (
         args.catalog
         and input_or_output
@@ -97,12 +115,27 @@ def main() -> None:
         if args.snapshot or not args.catalog:
             parser.error("--from-snapshot requires --catalog and excludes --snapshot")
         snapshot = Snapshot.model_validate_json(args.from_snapshot.read_bytes())
+    elif args.merge_snapshots:
+        if args.snapshot is None or args.snapshot.exists():
+            parser.error("--merge-snapshots requires a new --snapshot path")
+        snapshot = combine_snapshots(
+            tuple(
+                Snapshot.model_validate_json(path.read_bytes())
+                for path in args.merge_snapshots
+            )
+        )
+        save_snapshot(snapshot, args.snapshot)
     else:
         if args.snapshot is None or args.snapshot.exists():
-            parser.error("--cities requires a new --snapshot path")
+            parser.error("Collection requires a new --snapshot path")
+        codes = (
+            TypeAdapter(tuple[Code, ...]).validate_json(args.cities_file.read_bytes())
+            if args.cities_file
+            else tuple(code.upper() for code in args.cities)
+        )
         snapshot = asyncio.run(
             download(
-                tuple(code.upper() for code in args.cities),
+                codes,
                 max_airports=args.max_airports,
                 interval=args.interval,
             )

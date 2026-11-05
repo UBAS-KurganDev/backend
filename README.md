@@ -23,6 +23,7 @@ SQLAlchemy ORM/Core, Alembic. Зависимости через uv; Ruff и ст
 - [Покрытие MVP и открытые вопросы](docs/mvp-coverage.md).
 - [Скрапер agent.ru: запуск, формат, кэш и ограничения](docs/agent-scraper.md).
 - [Правила разработки](AGENTS.md).
+- [Охват расширенной топологии и ограничения поиска](docs/topology-coverage.md).
 
 ## Локальный запуск
 

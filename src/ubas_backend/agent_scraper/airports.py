@@ -83,3 +83,47 @@ def airports_for_city(city_code: str) -> tuple[Airport, ...]:
         and code not in _RETIRED_CODES
         and (airport := airport_for_code(code)) is not None
     )
+
+
+class AirportDirectory:
+    """Read-only lookup; only fully collected cities may be searched."""
+
+    def __init__(
+        self,
+        airports: tuple[Airport, ...],
+        searchable_airports: frozenset[str],
+        *,
+        fallback: AirportDirectory | None = None,
+    ) -> None:
+        self._fallback = fallback
+        self._airports = {airport.code: airport for airport in airports}
+        if len(self._airports) != len(airports):
+            raise ValueError("Duplicate airport codes")
+        if not searchable_airports <= self._airports.keys():
+            raise ValueError("Unknown searchable airports")
+        cities: dict[str, list[Airport]] = {}
+        for code in sorted(searchable_airports):
+            airport = self._airports[code]
+            cities.setdefault(airport.city_code, []).append(airport)
+        self._cities = {code: tuple(items) for code, items in cities.items()}
+
+    def airport_for_code(self, code: str) -> Airport | None:
+        return self._airports.get(code) or (
+            self._fallback.airport_for_code(code) if self._fallback else None
+        )
+
+    def airports_for_city(self, city_code: str) -> tuple[Airport, ...]:
+        return self._cities.get(city_code) or (
+            self._fallback.airports_for_city(city_code) if self._fallback else ()
+        )
+
+
+def default_directory() -> AirportDirectory:
+    return AirportDirectory(
+        tuple(
+            airport
+            for code in _AIRPORTS
+            if (airport := airport_for_code(code)) is not None
+        ),
+        frozenset(_AIRPORTS) - _RETIRED_CODES,
+    )

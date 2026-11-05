@@ -40,6 +40,7 @@ d4d838879c6e054bd4acac22e2678dbfc8c8cf1a. При конфликте старых
 - docs/direct-routes.md — HTTP-ввод, результат версии 2 и миграция фронта.
 - docs/repositories.md — обычная подстановка источников через конструктор.
 - docs/topology.md — источники направлений, снимки, атомарный импорт и охват.
+- docs/topology-coverage.md — расширенный набор городов и ограничения поиска на нём.
 - docs/query-manager.md — очередь, аренда, HTTP и deployment.
 - docs/mvp-coverage.md — приёмочные сценарии и ограничения прототипа.
 - docs/agent-scraper.md — формат источника, даты, кэш, отмена и запуск браузера.
