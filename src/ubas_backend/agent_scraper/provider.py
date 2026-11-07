@@ -1,6 +1,7 @@
 """FlightProvider adapter: city airports, disjoint dates, honest completeness."""
 
 import asyncio
+import logging
 from datetime import UTC, date, datetime
 from itertools import product
 from zoneinfo import ZoneInfo
@@ -12,6 +13,8 @@ from ubas_backend.agent_scraper.models import SearchRequest
 from ubas_backend.agent_scraper.service import FlightSearchService
 from ubas_backend.routing.ports import FlightProviderError
 from ubas_backend.routing.schemas import FlightQuery, FlightSearchResult, TicketOffer
+
+logger = logging.getLogger(__name__)
 
 
 def _next_occurrence(day: date, today: date) -> date | None:
@@ -36,51 +39,64 @@ class AgentFlightProvider:
         self._service = service or FlightSearchService()
         self._airports = airports or default_directory()
 
-    async def _search_airports(self, request: SearchRequest) -> FlightSearchResult:
-        captured = await self._service.get_offers(request)
+    async def _search_airports(
+        self, request: SearchRequest, max_segments: int
+    ) -> FlightSearchResult:
+        try:
+            captured = await self._service.get_offers(request)
+        except FlightProviderError:
+            logger.warning(
+                "agent_airport_pair_failed origin=%s destination=%s date=%s",
+                request.origin,
+                request.destination,
+                request.depart_date,
+            )
+            raise
         return map_response(
-            captured, request, airport_lookup=self._airports.airport_for_code
+            captured,
+            request,
+            airport_lookup=self._airports.airport_for_code,
+            max_segments=max_segments,
         )
 
     async def search(self, query: FlightQuery) -> FlightSearchResult:
         if query.passengers != 1 or query.currency != "RUB":
             raise FlightProviderError("agent_unsupported_query")
-        if query.departure_from != query.departure_to:
-            # TicketSearch replaces this response with disjoint single-day requests.
-            return FlightSearchResult(
-                complete=False, warnings=("agent_requires_single_day",)
-            )
         origins = self._airports.airports_for_city(query.origin)
         destinations = self._airports.airports_for_city(query.destination)
         if not origins or not destinations:
             raise FlightProviderError("agent_unsupported_city")
         today = datetime.now(UTC).astimezone(ZoneInfo(origins[0].timezone)).date()
-        if query.departure_from < today:
+        if query.departure_date < today:
             return FlightSearchResult()
         # The source URL has no year. Do not silently search the wrong year.
-        if _next_occurrence(query.departure_from, today) != query.departure_from:
+        if _next_occurrence(query.departure_date, today) != query.departure_date:
             raise FlightProviderError("agent_unsupported_year")
-        try:
-            async with asyncio.TaskGroup() as group:
-                tasks = [
-                    group.create_task(
-                        self._search_airports(
-                            SearchRequest(
-                                origin=origin.code,
-                                destination=destination.code,
-                                depart_date=query.departure_from,
-                            )
-                        )
-                    )
-                    for origin, destination in product(origins, destinations)
-                ]
-        except ExceptionGroup as error:
-            raise FlightProviderError("agent_airport_search_failed") from error
+        pairs = tuple(product(origins, destinations))
+        tasks = [
+            asyncio.create_task(
+                self._search_airports(
+                    SearchRequest(
+                        origin=origin.code,
+                        destination=destination.code,
+                        depart_date=query.departure_date,
+                    ),
+                    query.max_segments,
+                )
+            )
+            for origin, destination in pairs
+        ]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        failures = [result for result in results if isinstance(result, BaseException)]
+        if failures:
+            # All successful airport pairs have reached the cache before failure.
+            raise FlightProviderError("agent_airport_search_failed") from failures[0]
         offers: list[TicketOffer] = []
         warnings: set[str] = set()
         complete = True
-        for task in tasks:
-            result = task.result()
+        for result in results:
+            if isinstance(result, BaseException):
+                continue
             complete &= result.complete
             warnings.update(result.warnings)
             offers.extend(

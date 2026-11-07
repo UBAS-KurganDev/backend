@@ -23,13 +23,12 @@ class PlannerConfig(Model):
     max_offers_per_search: int = Field(ge=1, default=2000)
     max_total_offers: int = Field(ge=1, default=50_000)
     max_provider_queries: int = Field(ge=1, default=4000)
-    refine_date_ranges: bool = True
     max_candidates: int = Field(ge=1, default=100_000)
     max_search_nodes: int = Field(ge=1, default=200_000)
     max_frontier: int = Field(ge=1, default=200_000)
     max_concurrent_queries: int = Field(ge=1, default=8)
     query_timeout_seconds: float = Field(gt=0, default=30)
-    search_timeout_seconds: float = Field(gt=0, default=240)
+    search_timeout_seconds: float = Field(gt=0, default=1200)
 
     @model_validator(mode="after")
     def rub_is_identity(self) -> Self:

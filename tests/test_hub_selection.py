@@ -42,13 +42,21 @@ class HubSelectionTests(unittest.IsolatedAsyncioTestCase):
             profile("XXX", 100)
         ]
         provider = Provider(())
-        planner = RoutePlanner(provider, graph, Cities(profiles), geography=Geography())
-        result = await planner.plan(REQUEST, now=NOW)
+        planner = RoutePlanner(
+            provider,
+            graph,
+            Cities(profiles),
+            geography=Geography(),
+            config=PlannerConfig(max_provider_queries=6000),
+        )
+        result = await planner.plan(
+            REQUEST.model_copy(update={"date_to": REQUEST.date_from}), now=NOW
+        )
         self.assertTrue(result.complete)
         self.assertEqual(result.search_scope.candidate_hubs, 35)
         self.assertEqual(result.search_scope.selected_hubs, tuple(reversed(hubs[5:])))
         self.assertTrue(result.search_scope.limited)
-        self.assertEqual(len(provider.queries), 32 * 31)
+        self.assertEqual(len(provider.queries), 181)
         self.assertEqual(
             (provider.queries[0].origin, provider.queries[0].destination),
             ("AAA", "ZZZ"),
@@ -72,6 +80,7 @@ class HubSelectionTests(unittest.IsolatedAsyncioTestCase):
                 ("AAA", "CCC"),
                 ("CCC", "ZZZ"),
                 ("AAA", "DDD"),
+                ("DDD", "ZZZ"),
                 ("DDD", "CCC"),
             ]
         )
@@ -82,9 +91,10 @@ class HubSelectionTests(unittest.IsolatedAsyncioTestCase):
         graph.links.remove(("DDD", "CCC"))
         graph.links.add(("DDD", "BBB"))
         graph.links.add(("DDD", "CCC"))
+        graph.links.add(("BBB", "CCC"))
         selected = await select_cities(graph, candidates, {}, cfg, diagnostics)
         self.assertEqual(selected[-1], "BBB")
-        # Tourism has priority even over a direct connection to both endpoints.
+        # Tourism has priority over degree among eligible one-stop hubs.
         selected = await select_cities(
             graph, candidates, {"DDD": profile("DDD", 1)}, cfg, diagnostics
         )

@@ -95,7 +95,7 @@ class CandidateBuilder:
         occurrence: tuple[int, ...] = (),
     ) -> RouteCandidate | CandidateRejection:
         segments = tuple(segment for ticket in tickets for segment in ticket.segments)
-        if not 1 <= len(segments) <= 4:
+        if not 1 <= len(segments) <= 2:
             return CandidateRejection.STRUCTURE
         first, last = segments[0], segments[-1]
         if (

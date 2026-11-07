@@ -16,8 +16,7 @@ async def search(origin: str, destination: str, day: date) -> None:
             FlightQuery(
                 origin=origin.upper(),
                 destination=destination.upper(),
-                departure_from=day,
-                departure_to=day,
+                departure_date=day,
                 passengers=1,
                 limit=200,
             )

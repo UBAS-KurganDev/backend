@@ -3,6 +3,7 @@
 import asyncio
 import hashlib
 import json
+import logging
 from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
@@ -13,6 +14,12 @@ from playwright.async_api import Response, async_playwright
 from ubas_backend.agent_scraper.config import Settings
 from ubas_backend.agent_scraper.models import CapturedOffers, SearchRequest
 from ubas_backend.routing.ports import FlightProviderError
+
+logger = logging.getLogger(__name__)
+
+
+class TransientScrapeError(FlightProviderError):
+    """Transport failure eligible for a bounded retry, never a mapping error."""
 
 
 class ResponseAccumulator:
@@ -83,6 +90,7 @@ async def run_agent_scraper(
         except asyncio.QueueFull:
             overflow = True
 
+    phase = "launch"
     try:
         async with (
             async_playwright() as playwright,
@@ -94,13 +102,17 @@ async def run_agent_scraper(
                 context = await browser.new_context()
                 page = await context.new_page()
                 page.on("response", on_response)
-                await page.goto(request.search_url, wait_until="domcontentloaded")
+                phase = "navigation"
+                await page.goto(request.search_url, wait_until="commit")
+                phase = "offers"
                 accumulator = ResponseAccumulator()
                 size = 0
                 fetched_at: datetime | None = None
                 for _ in range(settings.max_response_batches):
                     response, received_at = await responses.get()
                     fetched_at = fetched_at or received_at
+                    if response.status == 429 or response.status >= 500:
+                        raise TransientScrapeError("agent_http_unavailable")
                     if overflow or response.status != 200:
                         raise FlightProviderError("agent_response_unavailable")
                     body = await response.body()
@@ -118,5 +130,15 @@ async def run_agent_scraper(
             finally:
                 # Closing the browser closes all contexts even on cancellation.
                 await browser.close()
-    except (PlaywrightError, TimeoutError, ValueError) as error:
+    except (PlaywrightError, TimeoutError) as error:
+        logger.warning(
+            "agent_transport_failure origin=%s destination=%s date=%s phase=%s kind=%s",
+            request.origin,
+            request.destination,
+            request.depart_date,
+            phase,
+            type(error).__name__,
+        )
+        raise TransientScrapeError("agent_search_failed") from error
+    except ValueError as error:
         raise FlightProviderError("agent_search_failed") from error

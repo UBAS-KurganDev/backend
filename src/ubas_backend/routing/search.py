@@ -48,7 +48,7 @@ def price_bounds(
     consumes all its segments but charges its fare once. Missing prices are zero.
     """
     bounds: list[dict[str, Decimal]] = [{destination: Decimal(0)}]
-    for remaining in range(1, 5):
+    for remaining in range(1, 3):
         current = dict(bounds[-1])
         for offer in offers:
             size = len(offer.segments)
@@ -93,7 +93,9 @@ class RouteSearch:
         results = CheapestResults()
 
         def push(path: Path) -> bool:
-            tail = bounds[4 - path.segment_count].get(path.city)
+            if path.segment_count > 2:
+                return True
+            tail = bounds[2 - path.segment_count].get(path.city)
             if tail is None:
                 diagnostics.rejected["unreachable_destination"] += 1
                 return True
@@ -135,6 +137,7 @@ class RouteSearch:
                 diagnostics.partial("search_node_limit")
                 break
             nodes += 1
+            diagnostics.search_nodes = nodes
             if nodes % 64 == 0:
                 await asyncio.sleep(0)
             if path.city == request.destination:
@@ -146,8 +149,9 @@ class RouteSearch:
                 if isinstance(candidate, CandidateRejection):
                     diagnostics.rejected[candidate.value] += 1
                 else:
+                    diagnostics.routes_valid += 1
                     results.add(candidate)
-            if path.segment_count == 4:
+            if path.segment_count == 2:
                 continue
             items = by_city.get(path.city, [])
             start = bisect_right(departures.get(path.city, []), path.arrival)
@@ -155,7 +159,7 @@ class RouteSearch:
                 _, index = items[offset]
                 offer = offers[index]
                 size = path.segment_count + len(offer.segments)
-                if size <= 4:
+                if size <= 2:
                     admitted = push(
                         Path(
                             (*path.indices, index),

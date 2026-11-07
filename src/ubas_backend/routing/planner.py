@@ -84,29 +84,46 @@ class RoutePlanner:
             raise ValueError("now must be timezone-aware")
         current = current.astimezone(UTC)
         self.policy.validate(request, now=current)
+        diagnostics = SearchDiagnostics()
+        reporter = asyncio.create_task(diagnostics.report_progress())
+        outcome = "failed"
+        diagnostics.log("started")
         try:
             async with asyncio.timeout(self.config.search_timeout_seconds):
-                return await self._plan(request, current, now)
+                result = await self._plan(request, current, now, diagnostics)
+                outcome = "completed"
+                return result
         except TimeoutError as error:
+            outcome = "timeout"
+            diagnostics.partial("search_timeout")
             raise IncompleteSearchError(("search_timeout",)) from error
+        except asyncio.CancelledError:
+            outcome = "cancelled"
+            raise
+        finally:
+            reporter.cancel()
+            await asyncio.gather(reporter, return_exceptions=True)
+            diagnostics.log(outcome)
 
     async def _plan(
         self,
         request: RouteRequest,
         current: datetime,
         fixed_now: datetime | None,
+        diagnostics: SearchDiagnostics,
     ) -> PlanResult:
-        diagnostics = SearchDiagnostics()
         if self.geography is not None:
             zone = await self.geography.timezone(request.origin)
             if zone is None:
                 raise InvalidRouteRequest("Unknown origin city timezone.")
             self.policy.validate(request, now=current, origin_timezone=zone)
+        diagnostics.phase = "topology"
         candidates = await discover_cities(
             self.topology, request, self.config, diagnostics
         )
         if not diagnostics.complete:
             raise IncompleteSearchError(tuple(diagnostics.warnings))
+        diagnostics.phase = "tourism"
         profiles = await self._profiles(candidates, diagnostics)
         cities = await select_cities(
             self.topology, candidates, profiles, self.config, diagnostics
@@ -116,6 +133,10 @@ class RoutePlanner:
         origin = profiles.get(request.origin)
         if origin:
             self.policy.validate(request, now=current, origin_timezone=origin.timezone)
+        diagnostics.phase = "tickets"
+        diagnostics.queries_planned = sum(
+            1 for _ in build_queries(request, cities, self.config)
+        )
         offers = await self.search.collect(
             build_queries(request, cities, self.config),
             request,
@@ -140,10 +161,12 @@ class RoutePlanner:
             for segment in offer.segments[:-1]
         } - set(candidates)
         if missing:
+            diagnostics.phase = "tourism_enrichment"
             profiles.update(await self._profiles(tuple(sorted(missing)), diagnostics))
         builder = CandidateBuilder(
             self.config, profiles, CostCalculator(self.config), self.visas
         )
+        diagnostics.phase = "routes"
         ranked = await RouteSearch(self.config, builder).run(
             offers, request, diagnostics, fixed_now or datetime.now(UTC)
         )

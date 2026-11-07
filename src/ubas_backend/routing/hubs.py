@@ -35,17 +35,17 @@ async def discover_cities(
 ) -> tuple[str, ...]:
     endpoints = (request.origin, request.destination)
     if isinstance(topology, PathTopologyRepository):
-        candidates = await topology.cities_on_paths(*endpoints, max_segments=4)
+        candidates = await topology.cities_on_paths(*endpoints, max_segments=2)
         eligible = set(candidates) - set(endpoints)
         if len(eligible) + 2 > config.max_topology_cities:
             diagnostics.partial("topology_discovery_limit")
             return endpoints
     else:
-        # Include the fourth edge so candidates can be checked against the target.
+        # Include the second edge so candidates can be checked against the target.
         seen = {request.origin}
         frontier: tuple[str, ...] = (request.origin,)
         links: set[tuple[str, str]] = set()
-        for _ in range(4):
+        for _ in range(2):
             adjacency = await outgoing(topology, frontier, config)
             links.update((a, b) for a, targets in adjacency.items() for b in targets)
             found = {b for targets in adjacency.values() for b in targets} - seen
@@ -59,7 +59,7 @@ async def discover_cities(
             frontier = tuple(sorted(found))
             if not frontier:
                 break
-        eligible = set(cities_on_paths(links, *endpoints, max_segments=4))
+        eligible = set(cities_on_paths(links, *endpoints, max_segments=2))
     return (*endpoints, *sorted(eligible))
 
 

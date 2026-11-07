@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import logging
 import signal
 
 from ubas_backend.runtime import create_runtime
@@ -33,6 +34,7 @@ async def run() -> None:
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.INFO)
     asyncio.run(run())
 
 

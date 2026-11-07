@@ -16,5 +16,7 @@ class Settings(BaseSettings):
     cache_ttl_seconds: int = Field(default=1800, ge=1, le=172800)
     cache_max_entries: int = Field(default=128, ge=1, le=10000)
     max_concurrency: int = Field(default=2, ge=1, le=16)
-    timeout_seconds: float = Field(default=60, gt=0, le=180)
+    # Three shorter attempts fit into the planner's per-city query budget.
+    timeout_seconds: float = Field(default=30, gt=0, le=180)
+    max_attempts: int = Field(default=3, ge=1, le=3)
     max_response_batches: int = Field(default=100, ge=1, le=1000)
