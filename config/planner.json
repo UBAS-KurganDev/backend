@@ -1,3 +1,5 @@
 {
-  "query_timeout_seconds": 90
+  "query_timeout_seconds": 150,
+  "search_timeout_seconds": 1200,
+  "max_concurrent_queries": 2
 }

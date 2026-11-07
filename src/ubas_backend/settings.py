@@ -89,7 +89,7 @@ class Settings:
             ),
             worker_max_attempts=_positive_int("UBAS_WORKER_MAX_ATTEMPTS", 3),
             worker_execution_timeout=_positive_float(
-                "UBAS_WORKER_TIMEOUT_SECONDS", 300
+                "UBAS_WORKER_TIMEOUT_SECONDS", 1260
             ),
             planner_config=load_planner_config(),
         )

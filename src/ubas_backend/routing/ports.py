@@ -20,7 +20,9 @@ class CitySourceError(Exception):
 
 
 class FlightProvider(Protocol):
-    async def search(self, query: FlightQuery) -> FlightSearchResult: ...
+    async def search(self, query: FlightQuery) -> FlightSearchResult:
+        """Tickets departing on one local date; include all airport pairs/pages."""
+        ...
 
 
 @runtime_checkable

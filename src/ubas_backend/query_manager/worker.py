@@ -8,6 +8,7 @@ from typing import Protocol
 
 from ubas_backend.query_manager.ports import ClaimedQuery, QueryRepository
 from ubas_backend.query_manager.schemas import QueryFailure, QueryResult
+from ubas_backend.routing.diagnostics import query_context
 from ubas_backend.routing.planner import IncompleteSearchError
 from ubas_backend.routing.policy import InvalidRouteRequest
 from ubas_backend.routing.schemas import PlanResult, RouteRequest
@@ -33,7 +34,7 @@ class QueryWorker:
         poll_interval: float,
         lease_duration: timedelta,
         retry_delay: timedelta,
-        execution_timeout: float = 300,
+        execution_timeout: float = 1260,
     ) -> None:
         self._repository = repository
         self._planner = planner
@@ -129,7 +130,11 @@ class QueryWorker:
     async def _process(self, claimed: ClaimedQuery) -> None:
         try:
             async with asyncio.timeout(self._execution_timeout):
-                result = await self._planner.plan(claimed.request)
+                token = query_context.set(str(claimed.query_id))
+                try:
+                    result = await self._planner.plan(claimed.request)
+                finally:
+                    query_context.reset(token)
                 if not result.complete:
                     raise IncompleteSearchError(result.warnings)
         except InvalidRouteRequest as error:

@@ -97,12 +97,11 @@ class TicketOffer(Model):
 
 
 class FlightQuery(Model):
-    """All airports of both cities, all purchasable tickets up to max_segments."""
+    """One local departure date, all city airports and tickets up to max_segments."""
 
     origin: Code
     destination: Code
-    departure_from: date
-    departure_to: date
+    departure_date: date
     max_segments: int = Field(ge=1, le=4, default=4)
     passengers: int = Field(ge=1, le=9)
     currency: Code = "RUB"
@@ -112,8 +111,6 @@ class FlightQuery(Model):
     def valid_query(self) -> Self:
         if self.origin == self.destination:
             raise ValueError("Origin and destination must differ")
-        if self.departure_from > self.departure_to:
-            raise ValueError("Departure date range is reversed")
         return self
 
 

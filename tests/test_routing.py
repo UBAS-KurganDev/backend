@@ -30,23 +30,30 @@ from ubas_backend.routing.schemas import FlightQuery, FlightSearchResult, VisaEx
 
 
 class RoutingTests(unittest.IsolatedAsyncioTestCase):
-    async def test_one_two_three_stops_and_mixed_ticket_packages(self):
-        parts = [
-            segment("AAA", "BBB", 0),
-            segment("BBB", "CCC", 3),
-            segment("CCC", "DDD", 6),
-            segment("DDD", "ZZZ", 9),
-        ]
-        for boundary in (1, 2, 3, 4):
+    async def test_one_stop_and_mixed_ticket_packages(self):
+        parts = [segment("AAA", "BBB", 0), segment("BBB", "ZZZ", 3)]
+        for boundary in (1, 2):
             tickets = [offer("first", parts[:boundary], 20)]
-            if boundary < 4:
+            if boundary < 2:
                 tickets.append(offer("second", parts[boundary:], 30))
             result = await plan(tickets, visas=NoVisas())
             self.assertEqual(len(result.routes), 1)
-            self.assertEqual(len(result.routes[0].route.stopovers), 3)
+            self.assertEqual(len(result.routes[0].route.stopovers), 1)
             self.assertEqual(
-                result.routes[0].route.total_cost.amount, 20 if boundary == 4 else 50
+                result.routes[0].route.total_cost.amount, 20 if boundary == 2 else 50
             )
+
+    async def test_two_stops_are_excluded_for_through_and_separate_tickets(self):
+        parts = [
+            segment("AAA", "BBB", 0),
+            segment("BBB", "CCC", 3),
+            segment("CCC", "ZZZ", 6),
+        ]
+        for tickets in (
+            [offer("through", parts)],
+            [offer(i, [part]) for i, part in enumerate(parts)],
+        ):
+            self.assertEqual((await plan(tickets, visas=NoVisas())).routes, ())
 
     async def test_four_stops_are_excluded(self):
         cities = ("AAA", "BBB", "CCC", "DDD", "EEE", "ZZZ")
@@ -193,8 +200,7 @@ class RoutingTests(unittest.IsolatedAsyncioTestCase):
                     "t",
                     [
                         segment("AAA", "BBB"),
-                        segment("BBB", "CCC", 4),
-                        segment("CCC", "ZZZ", 8),
+                        segment("BBB", "ZZZ", 8),
                     ],
                     20000,
                 )
@@ -256,22 +262,19 @@ class RoutingTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(InvalidRouteRequest):
             policy.validate(request, now=at, origin_timezone="Asia/Tokyo")
 
-    async def test_refinement_replaces_parent_and_preserves_real_duplicates(self):
+    async def test_single_date_search_preserves_real_duplicates(self):
         item = offer("same", [segment("AAA", "ZZZ")])
 
         class Provider:
             async def search(self, query):
-                if query.departure_from != query.departure_to:
-                    return FlightSearchResult(offers=(), complete=False)
                 return FlightSearchResult(
-                    offers=(item, item) if query.departure_from == START.date() else ()
+                    offers=(item, item) if query.departure_date == START.date() else ()
                 )
 
         query = FlightQuery(
             origin="AAA",
             destination="ZZZ",
-            departure_from=START.date(),
-            departure_to=START.date() + timedelta(days=2),
+            departure_date=START.date(),
             passengers=1,
             limit=10,
         )

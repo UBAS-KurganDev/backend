@@ -25,6 +25,7 @@ from ubas_backend.agent_scraper.models import CapturedOffers, SearchRequest
 from ubas_backend.agent_scraper.provider import AgentFlightProvider, _next_occurrence
 from ubas_backend.agent_scraper.scraper_agent import (
     ResponseAccumulator,
+    TransientScrapeError,
     run_agent_scraper,
 )
 from ubas_backend.agent_scraper.service import FlightSearchService
@@ -75,8 +76,7 @@ def query(**changes):
         {
             "origin": "SVX",
             "destination": "AYT",
-            "departure_from": DAY,
-            "departure_to": DAY,
+            "departure_date": DAY,
             "passengers": 1,
             "limit": 100,
             **changes,
@@ -105,6 +105,40 @@ def raw_ticket(value):
 
 
 class MappingTests(unittest.TestCase):
+    def test_city_alternatives_are_partitioned_by_airport_not_duplicated(self):
+        value = one_ticket()
+        flights = raw_ticket(value)["flights_info"]
+        flights[0]["departure_airport"] = "DXB"
+        flights[0]["departure_local_time"] = "03:00"
+        alternate = copy.deepcopy(raw_ticket(value))
+        alternate["flights_info"][0]["departure_airport"] = "DWC"
+        value.data["offers"][0]["offers"][0]["segments"].append(alternate)
+        for airport in ("DXB", "DWC"):
+            result = map_response(value, request(origin=airport))
+            self.assertTrue(result.complete, result.warnings)
+            self.assertEqual(len(result.offers), 1)
+            self.assertEqual(result.offers[0].segments[0].origin.code, airport)
+        result = map_response(value, request())
+        self.assertFalse(result.complete)
+        self.assertIn("agent_mapping:query_mismatch", result.warnings)
+
+    def test_known_ground_station_is_excluded_but_unknown_airport_is_an_error(self):
+        value = one_ticket()
+        raw_ticket(value)["flights_info"][0]["departure_airport"] = "СТЗ"
+        result = map_response(value, request())
+        self.assertTrue(result.complete)
+        self.assertEqual(result.offers, ())
+        raw_ticket(value)["flights_info"][0]["departure_airport"] = "ZZZ"
+        self.assertFalse(map_response(value, request()).complete)
+
+    def test_out_of_scope_segments_are_filtered_before_mapping(self):
+        value = one_ticket()
+        raw_ticket(value)["flights_info"][0]["techstop"] = True
+        result = map_response(value, request(), max_segments=1)
+        self.assertTrue(result.complete)
+        self.assertEqual(result.offers, ())
+        self.assertFalse(map_response(value, request(), max_segments=2).complete)
+
     def test_live_shape_preserves_individual_price_and_all_flights(self):
         result = map_response(captured(), request())
         self.assertTrue(result.complete, result.warnings)
@@ -170,7 +204,7 @@ class MappingTests(unittest.TestCase):
             ("arrival_date", None),
             ("arrival_local_time", "00:00"),
             ("operating_airline_code", None),
-            ("service_class", "Business"),
+            ("service_class", "Unknown cabin"),
             ("techstop", True),
         )
         for key, val in mutations:
@@ -180,6 +214,49 @@ class MappingTests(unittest.TestCase):
                 result = map_response(value, request())
                 self.assertFalse(result.complete)
                 self.assertEqual(result.offers, ())
+
+    def test_business_and_mixed_cabins_are_outside_economy_scope(self):
+        for label in ("Бизнес", "Business", " BUSINESS ", " бизнес "):
+            for mixed in (False, True):
+                with self.subTest(label=label, mixed=mixed):
+                    value = one_ticket()
+                    excluded = copy.deepcopy(raw_ticket(value))
+                    for flight in excluded["flights_info"]:
+                        flight["service_class"] = label
+                    if mixed:
+                        excluded["flights_info"][0]["service_class"] = "Economy"
+                    alternatives = value.data["offers"][0]["offers"][0]["segments"]
+                    alternatives.append(excluded)
+                    result = map_response(value, request())
+                    self.assertTrue(result.complete, result.warnings)
+                    self.assertEqual(len(result.offers), 1)
+                    self.assertEqual(len(result.offers[0].segments), 2)
+                    alternatives.pop(0)
+                    result = map_response(value, request())
+                    self.assertTrue(result.complete, result.warnings)
+                    self.assertEqual(result.offers, ())
+
+    def test_economy_labels_are_normalized(self):
+        value = one_ticket()
+        for flight, label in zip(
+            raw_ticket(value)["flights_info"], (" ЭКОНОМ ", " economy "), strict=True
+        ):
+            flight["service_class"] = label
+        result = map_response(value, request())
+        self.assertTrue(result.complete, result.warnings)
+        self.assertEqual(len(result.offers), 1)
+
+    def test_unknown_cabin_keeps_valid_offers_but_marks_incomplete(self):
+        for label in (None, "", "Unknown", 1):
+            with self.subTest(label=label):
+                value = one_ticket()
+                invalid = copy.deepcopy(raw_ticket(value))
+                invalid["flights_info"][0]["service_class"] = label
+                value.data["offers"][0]["offers"][0]["segments"].append(invalid)
+                result = map_response(value, request())
+                self.assertFalse(result.complete)
+                self.assertEqual(len(result.offers), 1)
+                self.assertEqual(result.warnings, ("agent_mapping:unsupported_cabin",))
 
     def test_bad_price_passengers_and_date_mark_incomplete(self):
         for key, val in (
@@ -231,6 +308,53 @@ class PaginationTests(unittest.TestCase):
 
 
 class ServiceTests(unittest.IsolatedAsyncioTestCase):
+    async def test_transient_retry_is_bounded_and_only_success_is_cached(self):
+        scrape = AsyncMock(side_effect=[TransientScrapeError("timeout"), empty()])
+        service = FlightSearchService(settings=Settings(redis_url=None), scrape=scrape)
+        try:
+            first = await service.get_offers(request())
+            self.assertEqual(await service.get_offers(request()), first)
+            self.assertEqual(scrape.await_count, 2)
+        finally:
+            await service.aclose()
+
+    async def test_permanent_failure_not_retried_and_transient_exhaustion_not_cached(
+        self,
+    ):
+        for error, expected in (
+            (FlightProviderError("invalid"), 1),
+            (TransientScrapeError("timeout"), 3),
+        ):
+            scrape = AsyncMock(side_effect=error)
+            service = FlightSearchService(
+                settings=Settings(redis_url=None), scrape=scrape
+            )
+            try:
+                with self.assertRaises(FlightProviderError):
+                    await service.get_offers(request())
+                self.assertEqual(scrape.await_count, expected)
+                self.assertFalse(service.cache._entries)
+                self.assertFalse(service._flights)
+            finally:
+                await service.aclose()
+
+    async def test_cancellation_during_retry_delay_stops_further_attempts(self):
+        attempted = asyncio.Event()
+
+        async def scrape(req, settings):
+            attempted.set()
+            raise TransientScrapeError("timeout")
+
+        service = FlightSearchService(settings=Settings(redis_url=None), scrape=scrape)
+        task = asyncio.create_task(service.get_offers(request()))
+        await attempted.wait()
+        task.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await task
+        self.assertFalse(service._flights)
+        self.assertFalse(service.cache._entries)
+        await service.aclose()
+
     async def test_date_keys_singleflight_and_original_timestamp(self):
         started, release = asyncio.Event(), asyncio.Event()
         calls = []
@@ -397,29 +521,30 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
         self.clock.now.return_value = NOW
         self.addCleanup(clock.stop)
 
-    async def test_ranges_are_refined_to_every_day_by_planner(self):
+    async def test_dates_are_prepared_without_spending_refinement_calls(self):
         service = SimpleNamespace(get_offers=AsyncMock(return_value=empty()))
         provider = AgentFlightProvider(service)
-        cfg = PlannerConfig()
+        cfg = PlannerConfig(max_provider_queries=3)
         diagnostics = SearchDiagnostics()
-        q = query(departure_to=DAY + timedelta(days=2))
+        queries = tuple(query(departure_date=DAY + timedelta(days=i)) for i in range(3))
         req = RouteRequest(
             origin="SVX",
             destination="AYT",
-            date_from=q.departure_from,
-            date_to=q.departure_to,
+            date_from=DAY,
+            date_to=DAY + timedelta(days=2),
         )
         result = await TicketSearch(provider, cfg).collect(
-            (q,), req, diagnostics, now=NOW
+            queries, req, diagnostics, now=NOW
         )
         self.assertTrue(diagnostics.complete)
+        self.assertNotIn("agent_requires_single_day", diagnostics.warnings)
         self.assertEqual(result, ())
         self.assertEqual(
             {call.args[0].depart_date for call in service.get_offers.call_args_list},
             {DAY + timedelta(days=i) for i in range(3)},
         )
 
-    async def test_city_expands_airports_and_error_cancels_siblings(self):
+    async def test_city_expands_airports_and_failure_does_not_cancel_siblings(self):
         service = SimpleNamespace(get_offers=AsyncMock(return_value=empty()))
         result = await AgentFlightProvider(service).search(query(origin="MOW"))
         self.assertTrue(result.complete)
@@ -427,23 +552,20 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
             {call.args[0].origin for call in service.get_offers.call_args_list},
             {"SVO", "DME", "VKO", "ZIA"},
         )
-        started, cancelled = asyncio.Event(), asyncio.Event()
+        finished: set[str] = set()
 
         async def search(req):
             if req.origin == "SVO":
-                await started.wait()
                 raise FlightProviderError("offline")
-            started.set()
-            try:
-                await asyncio.Event().wait()
-            finally:
-                cancelled.set()
+            await asyncio.sleep(0)
+            finished.add(req.origin)
+            return empty()
 
         with self.assertRaises(FlightProviderError):
             await AgentFlightProvider(SimpleNamespace(get_offers=search)).search(
                 query(origin="MOW")
             )
-        self.assertTrue(cancelled.is_set())
+        self.assertEqual(finished, {"DME", "VKO", "ZIA"})
 
     async def test_truncation_and_mapping_failure_mark_incomplete(self):
         service = SimpleNamespace(get_offers=AsyncMock(return_value=captured()))
@@ -453,8 +575,7 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("agent_offer_limit", result.warnings)
         result = await AgentFlightProvider(service).search(
             query(
-                departure_from=DAY + timedelta(days=1),
-                departure_to=DAY + timedelta(days=1),
+                departure_date=DAY + timedelta(days=1),
             )
         )
         self.assertFalse(result.complete)
@@ -465,13 +586,11 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
         for q in (
             query(origin="ZZZ"),
             query(passengers=2),
-            query(departure_from=date(2028, 11, 18), departure_to=date(2028, 11, 18)),
+            query(departure_date=date(2028, 11, 18)),
         ):
             with self.assertRaises(FlightProviderError):
                 await provider.search(q)
-        result = await provider.search(
-            query(departure_from=date(2026, 1, 1), departure_to=date(2026, 1, 1))
-        )
+        result = await provider.search(query(departure_date=date(2026, 1, 1)))
         self.assertTrue(result.complete)
         service.get_offers.assert_not_awaited()
 
@@ -574,7 +693,7 @@ class ModelAndCatalogTests(unittest.TestCase):
 class PlannerIntegrationTests(unittest.IsolatedAsyncioTestCase):
     async def test_runtime_factory_source_mapping_and_planner_result(self):
         # Replace only browser I/O. Use the real factory, service, mapping,
-        # SQLite readers, date refinement and planner, including failure handling.
+        # SQLite readers, single-date searches and planner, including failure handling.
         for malformed in (False, True):
             with (
                 self.subTest(malformed=malformed),

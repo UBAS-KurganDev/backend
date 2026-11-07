@@ -69,9 +69,21 @@ def _schedule(flight: dict[str, Any], side: str, airport: Airport) -> datetime:
     return value
 
 
-def _segment(flight: dict[str, Any], lookup: AirportLookup) -> FlightSegment:
-    if flight.get("service_class") not in ("Эконом", "Economy"):
+def _is_economy_ticket(flights: list[dict[str, Any]]) -> bool:
+    cabins = {
+        value.strip().casefold() if isinstance(value, str) else None
+        for flight in flights
+        for value in (flight.get("service_class"),)
+    }
+    # A mixed-cabin ticket is outside the economy scope as a whole.
+    if cabins.intersection({"бизнес", "business"}):
+        return False
+    if not cabins.issubset({"эконом", "economy"}):
         raise MappingFailure("unsupported_cabin")
+    return True
+
+
+def _segment(flight: dict[str, Any], lookup: AirportLookup) -> FlightSegment:
     if flight.get("techstop") or flight.get("vehicle_type") != "aircraft":
         raise MappingFailure("unsupported_flight")
     origin = _airport(flight.get("departure_airport"), lookup)
@@ -122,6 +134,7 @@ def _ticket(
     currency: str,
     occurrence: str,
     lookup: AirportLookup,
+    max_segments: int,
 ) -> TicketOffer | None:
     if raw.get("dir_number") != 1:
         raise MappingFailure("unsupported_direction")
@@ -129,8 +142,17 @@ def _ticket(
     flights = _objects(raw.get("flights_info"))
     if not flights:
         raise MappingFailure("missing_flights")
-    if len(flights) > 4:
+    if len(flights) > max_segments:
         return None  # Outside the supported MVP, not a malformed supported ticket.
+    # agent.ru labels these bus alternatives as aircraft. Never invent an airport.
+    if any(
+        flight.get(side) == "СТЗ"
+        for flight in flights
+        for side in ("departure_airport", "arrival_airport")
+    ):
+        return None
+    if not _is_economy_ticket(flights):
+        return None
     details = _objects(raw.get("price_details"))
     if (
         len(details) != 1
@@ -139,12 +161,21 @@ def _ticket(
     ):
         raise MappingFailure("passengers_mismatch")
     segments = tuple(_segment(flight, lookup) for flight in flights)
+    expected_origin = _airport(request.origin, lookup)
+    expected_destination = _airport(request.destination, lookup)
     if (
-        segments[0].origin.code != request.origin
-        or segments[-1].destination.code != request.destination
+        segments[0].origin.city_code != expected_origin.city_code
+        or segments[-1].destination.city_code != expected_destination.city_code
         or segments[0].departure_at.date() != request.depart_date
     ):
         raise MappingFailure("query_mismatch")
+    # Source expands airport searches to the whole city. Partition by requested
+    # airports: the provider queries each airport pair, preserving genuine duplicates.
+    if (
+        segments[0].origin.code != request.origin
+        or segments[-1].destination.code != request.destination
+    ):
+        return None
     price = _price(raw.get("price"), currency)
     checked, description = _baggage(flights)
     # Hash source IDs: do not expose anonymous search/session tokens to the client.
@@ -169,6 +200,7 @@ def map_response(
     request: SearchRequest,
     *,
     airport_lookup: AirportLookup = airport_for_code,
+    max_segments: int = 4,
 ) -> FlightSearchResult:
     data = captured.data
     if data.get("status") != "Ready":
@@ -191,6 +223,7 @@ def map_response(
                                 currency,
                                 f"{section}:{group_index}:{index}:{number}",
                                 airport_lookup,
+                                max_segments,
                             )
                             if ticket is not None:
                                 offers.append(ticket)

@@ -1,5 +1,6 @@
 """FastAPI application and its lifecycle-managed runtime dependencies."""
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -15,6 +16,7 @@ from ubas_backend.settings import Settings, load_cors_origins
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    logging.basicConfig(level=logging.INFO)
     settings = Settings.from_environment(need_planner=None)
     runtime: Runtime = await create_runtime(
         settings, include_worker=settings.embedded_worker

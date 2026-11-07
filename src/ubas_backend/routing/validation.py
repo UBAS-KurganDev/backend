@@ -19,7 +19,7 @@ def matches_query(offer: TicketOffer, query: FlightQuery) -> bool:
         first.origin.city_code == query.origin
         and last.destination.city_code == query.destination
         and len(offer.segments) <= query.max_segments
-        and query.departure_from <= departure <= query.departure_to
+        and departure == query.departure_date
         and offer.passengers == query.passengers
         and offer.cabin == "economy"
     )
