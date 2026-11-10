@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,3 +20,9 @@ class Settings(BaseSettings):
     timeout_seconds: float = Field(default=30, gt=0, le=180)
     max_attempts: int = Field(default=3, ge=1, le=3)
     max_response_batches: int = Field(default=100, ge=1, le=1000)
+
+    @field_validator("topology_snapshot_path", mode="before")
+    @classmethod
+    def empty_snapshot_path(cls, value: object) -> object:
+        # Compose passes an empty value when this optional path is not configured.
+        return None if value == "" else value

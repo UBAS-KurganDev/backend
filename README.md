@@ -127,8 +127,23 @@ uv run --locked python -m ubas_backend.routing.demo
 ## Docker Compose
 
 Нужны Docker Engine и Compose. Подготовьте .env, непустой POSTGRES_PASSWORD
-и каталог в ./var до запуска. ./var монтируется в /app/var read-only для API
-и worker. Конфигурацию планировщика тоже размещайте в ./var.
+и каталог в ./var до запуска. ./var и ./config монтируются в /app/var и
+/app/config read-only для API и worker. Можно использовать
+`UBAS_PLANNER_CONFIG_PATH=./config/planner.json` или свой JSON в ./var.
+Compose передаёт пути из .env, включая `UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH`.
+Пустой путь планнера включает стандартные настройки; пустой путь снимка —
+встроенный справочник аэропортов скрапера.
+
+Файлы должны читаться пользователем контейнера с UID 10001. Сборщик создаёт
+JSON-снимок с правами только владельца; для публичного снимка аэропортов
+добавьте право чтения, например:
+
+```shell
+chmod a+r ./var/topology/scraper-airports-2026-11-10.json
+```
+
+Укажите фактическое имя своего снимка. Для реального поиска нужны каталог,
+снимок с покрытием выбранных городов и фабрика agent.ru из .env.example.
 
 Если uv на хосте нет, демо-каталог можно создать командой:
 
