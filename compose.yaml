@@ -17,11 +17,12 @@ x-application: &application
     UBAS_EMBEDDED_WORKER: "false"
     # API persists this limit when submitting a job; workers honor that value.
     UBAS_WORKER_MAX_ATTEMPTS: ${UBAS_WORKER_MAX_ATTEMPTS:-3}
-    UBAS_PLANNER_CONFIG_PATH:
+    UBAS_PLANNER_CONFIG_PATH: ${UBAS_PLANNER_CONFIG_PATH:-}
     # API also needs origin geography to validate local dates before enqueueing.
     UBAS_CATALOG_PATH: ${UBAS_CATALOG_PATH:-./var/catalog.sqlite3}
   volumes:
     - ./var:/app/var:ro
+    - ./config:/app/config:ro
 
 services:
   postgres:
@@ -75,7 +76,7 @@ services:
       <<: *application-environment
       UBAS_FLIGHT_PROVIDER_FACTORY: ${UBAS_FLIGHT_PROVIDER_FACTORY:-}
       UBAS_AGENT_HEADLESS: ${UBAS_AGENT_HEADLESS:-true}
-      UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH:
+      UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH: ${UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH:-}
       UBAS_AGENT_REDIS_URL: ${UBAS_AGENT_REDIS_URL:-}
       UBAS_AGENT_CACHE_TTL_SECONDS: ${UBAS_AGENT_CACHE_TTL_SECONDS:-1800}
       UBAS_AGENT_CACHE_MAX_ENTRIES: ${UBAS_AGENT_CACHE_MAX_ENTRIES:-128}

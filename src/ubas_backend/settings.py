@@ -97,6 +97,6 @@ class Settings:
 
 def load_planner_config() -> PlannerConfig:
     path = os.getenv("UBAS_PLANNER_CONFIG_PATH")
-    if path is None:
+    if not path:
         return PlannerConfig()
     return PlannerConfig.model_validate_json(Path(path).read_text(encoding="utf-8"))
