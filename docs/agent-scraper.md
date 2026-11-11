@@ -32,7 +32,7 @@ UBAS_AGENT_MAX_RESPONSE_BATCHES=100
 # Redis необязателен. Пустая переменная оставляет только память процесса.
 UBAS_AGENT_REDIS_URL=
 # Expanded airport directory, after collecting/importing the topology snapshot:
-# UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH=./var/topology/expanded-2026-11-11.json
+# UBAS_AGENT_TOPOLOGY_SNAPSHOT_PATH=./var/topology/expanded-2026-11-11-v2.json
 # Скопируйте config/planner.json в ./var/planner.json для Compose.
 UBAS_PLANNER_CONFIG_PATH=./var/planner.json
 ```

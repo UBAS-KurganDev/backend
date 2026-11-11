@@ -68,6 +68,10 @@ class CatalogVisaCosts:
             code = segment.destination.city_code
             profile = profiles.get(code)
             country = profile.country_code if profile else code
+            # The fixed MVP traveler is a Russian citizen and pays no visa fee
+            # for an intermediate visit inside the Russian Federation.
+            if country == "RU":
+                continue
             key = f"visa:{index}:{country}"
             if country in seen:
                 expenses.append(

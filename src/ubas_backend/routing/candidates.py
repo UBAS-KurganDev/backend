@@ -25,6 +25,7 @@ class CandidateRejection(StrEnum):
     STRUCTURE = "route_structure"
     DATES = "trip_dates"
     CHRONOLOGY = "connection_chronology"
+    AIRPORT_CHANGE_TOO_SHORT = "airport_change_too_short"
     TOURISM = "stopover_tourism"
     PAST = "departure_past"
 
@@ -68,6 +69,9 @@ class CandidateBuilder:
             ).total_seconds()
             if seconds <= 0:
                 return CandidateRejection.CHRONOLOGY
+            airport_change = first.destination.code != second.origin.code
+            if airport_change and seconds < 2 * 3600:
+                return CandidateRejection.AIRPORT_CHANGE_TOO_SHORT
             profile = self.profiles.get(first.destination.city_code)
             score = profile.tourism_score if profile else 0
             if seconds >= 12 * 3600 and score < self.config.tourism_threshold:
@@ -81,7 +85,7 @@ class CandidateBuilder:
                     departure_at=second.departure_at,
                     duration_hours=seconds / 3600,
                     tourism_score=score,
-                    airport_change=first.destination.code != second.origin.code,
+                    airport_change=airport_change,
                     self_transfer=left_ticket != right_ticket,
                 )
             )

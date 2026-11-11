@@ -96,14 +96,33 @@ class RoutingTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(result.routes, ())
 
-    async def test_airport_change_with_one_second_is_accepted_and_warned(self):
+    async def test_airport_change_requires_two_hours(self):
         first = offer("first", [segment("AAA", airport("BBB", "BBX"))])
-        second = offer("second", [segment(airport("BBB", "BBY"), "ZZZ", 2 + 1 / 3600)])
-        result = await plan([first, second], visas=NoVisas())
-        stop = result.routes[0].route.stopovers[0]
+        too_short = offer(
+            "short", [segment(airport("BBB", "BBY"), "ZZZ", 4 - 1 / 3600)]
+        )
+        rejected = await plan([first, too_short], visas=NoVisas())
+        self.assertEqual(rejected.routes, ())
+        self.assertGreater(rejected.rejected["airport_change_too_short"], 0)
+
+        through = offer("through", [first.segments[0], too_short.segments[0]])
+        self.assertEqual((await plan([through], visas=NoVisas())).routes, ())
+
+        enough = offer("enough", [segment(airport("BBB", "BBY"), "ZZZ", 4)])
+        accepted = await plan([first, enough], visas=NoVisas())
+        stop = accepted.routes[0].route.stopovers[0]
         self.assertTrue(stop.airport_change)
-        self.assertAlmostEqual(stop.duration_hours * 3600, 1)
-        self.assertIn("airport_change:0", result.routes[0].route.warnings)
+        self.assertEqual(stop.duration_hours, 2)
+        self.assertIn("airport_change:0", accepted.routes[0].route.warnings)
+
+    async def test_same_airport_still_accepts_any_positive_connection(self):
+        airport_b = airport("BBB", "BBX")
+        first = offer("first", [segment("AAA", airport_b)])
+        second = offer("second", [segment(airport_b, "ZZZ", 2 + 1 / 3600)])
+        result = await plan([first, second], visas=NoVisas())
+        self.assertAlmostEqual(
+            result.routes[0].route.stopovers[0].duration_hours * 3600, 1
+        )
 
     async def test_zero_and_negative_connections_are_excluded(self):
         for departure in (1, 2):
@@ -138,6 +157,18 @@ class RoutingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(route.total_cost.amount, 23000)
         self.assertEqual(route.ticket_cost.amount, 20000)
         self.assertEqual(route.visa_cost.amount, 3000)
+
+    async def test_russian_citizen_has_no_visa_cost_for_russian_stopover(self):
+        russian_city = profile("BBB", 80, fee=None, country="RU")
+        result = await plan(
+            [offer("t", [segment("AAA", "BBB"), segment("BBB", "ZZZ", 4)], 20000)],
+            profiles=[russian_city],
+        )
+        route = result.routes[0].route
+        self.assertEqual(route.total_cost.amount, 20000)
+        self.assertEqual(route.visa_cost.amount, 0)
+        self.assertTrue(route.full_cost_known)
+        self.assertFalse(any(item.kind == "visa" for item in route.costs))
 
     async def test_unknown_cost_is_flagged_and_sorted_without_penalty(self):
         result = await plan(
