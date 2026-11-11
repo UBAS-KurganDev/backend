@@ -40,7 +40,12 @@ def save_snapshot(snapshot: Snapshot, path: Path) -> None:
 
 
 async def download(
-    city_codes: tuple[str, ...], *, max_airports: int, interval: float
+    city_codes: tuple[str, ...],
+    *,
+    max_airports: int,
+    interval: float,
+    excluded_airports: tuple[str, ...] = (),
+    unmapped_airports: tuple[str, ...] = (),
 ) -> Snapshot:
     async with (
         asyncio.timeout(600),
@@ -63,6 +68,8 @@ async def download(
                 source,
                 city_codes,
                 max_airports=max_airports,
+                excluded_airports=excluded_airports,
+                unmapped_airports=unmapped_airports,
                 progress=lambda message: print(message, file=sys.stderr, flush=True),
             )
         finally:
@@ -89,6 +96,22 @@ def main() -> None:
     )
     parser.add_argument("--max-airports", type=int, default=100)
     parser.add_argument("--interval", type=float, default=1)
+    exclusions = parser.add_mutually_exclusive_group()
+    exclusions.add_argument(
+        "--exclude-airports",
+        nargs="+",
+        help="Explicit stale/closed airport IATA codes to record and skip",
+    )
+    exclusions.add_argument(
+        "--exclude-airports-file",
+        type=Path,
+        help="JSON array of explicit stale/closed airport IATA codes",
+    )
+    parser.add_argument(
+        "--unmapped-airports-file",
+        type=Path,
+        help="JSON array of source destinations missing from reference geography",
+    )
     args = parser.parse_args()
     input_or_output = args.from_snapshot or args.snapshot
     if (
@@ -111,6 +134,12 @@ def main() -> None:
         or not 0.25 <= args.interval <= 60
     ):
         parser.error("max-airports must be 1..1000; interval must be 0.25..60 seconds")
+    if (args.from_snapshot or args.merge_snapshots) and (
+        args.exclude_airports
+        or args.exclude_airports_file
+        or args.unmapped_airports_file
+    ):
+        parser.error("airport exceptions apply only during collection")
     if args.from_snapshot:
         if args.snapshot or not args.catalog:
             parser.error("--from-snapshot requires --catalog and excludes --snapshot")
@@ -133,11 +162,27 @@ def main() -> None:
             if args.cities_file
             else tuple(code.upper() for code in args.cities)
         )
+        excluded_airports = (
+            TypeAdapter(tuple[Code, ...]).validate_json(
+                args.exclude_airports_file.read_bytes()
+            )
+            if args.exclude_airports_file
+            else tuple(code.upper() for code in (args.exclude_airports or ()))
+        )
+        unmapped_airports = (
+            TypeAdapter(tuple[Code, ...]).validate_json(
+                args.unmapped_airports_file.read_bytes()
+            )
+            if args.unmapped_airports_file
+            else ()
+        )
         snapshot = asyncio.run(
             download(
                 codes,
                 max_airports=args.max_airports,
                 interval=args.interval,
+                excluded_airports=excluded_airports,
+                unmapped_airports=unmapped_airports,
             )
         )
         save_snapshot(snapshot, args.snapshot)

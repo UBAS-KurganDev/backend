@@ -78,6 +78,8 @@ class Snapshot(Model):
     started_at: AwareDatetime
     finished_at: AwareDatetime
     covered_cities: tuple[Code, ...] = Field(min_length=1)
+    excluded_airports: tuple[Code, ...] = ()
+    unmapped_airports: tuple[Code, ...] = ()
     cities: tuple[City, ...] = Field(min_length=1)
     airports: tuple[ReferenceAirport, ...] = Field(min_length=1)
     observations: tuple[Observation, ...] = Field(min_length=1)
@@ -87,11 +89,15 @@ class Snapshot(Model):
         cities = {city.code: city for city in self.cities}
         airports = {airport.code: airport for airport in self.airports}
         origins = {observation.origin for observation in self.observations}
+        excluded = set(self.excluded_airports)
+        unmapped = set(self.unmapped_airports)
         if (
             len(cities) != len(self.cities)
             or len(airports) != len(self.airports)
             or len(origins) != len(self.observations)
             or len(set(self.covered_cities)) != len(self.covered_cities)
+            or len(excluded) != len(self.excluded_airports)
+            or len(unmapped) != len(self.unmapped_airports)
         ):
             raise ValueError("Duplicate snapshot identities")
         if self.finished_at < self.started_at:
@@ -100,11 +106,25 @@ class Snapshot(Model):
             raise ValueError("Missing city geography")
         if any(airport.city_code not in cities for airport in self.airports):
             raise ValueError("Missing airport city geography")
+        if excluded - airports.keys() or any(
+            not airports[code].flightable
+            or airports[code].city_code not in self.covered_cities
+            for code in excluded
+        ):
+            raise ValueError("Invalid excluded airport")
+        missing_destinations = {
+            item.airport
+            for observation in self.observations
+            for item in observation.destinations
+            if item.airport not in airports
+        }
+        if unmapped & airports.keys() or missing_destinations != unmapped:
+            raise ValueError("Unrecorded or unused unmapped airport")
         expected = {
             airport.code
             for airport in self.airports
             if airport.city_code in self.covered_cities and airport.flightable
-        }
+        } - excluded
         if origins != expected or any(
             not any(airports[code].city_code == city for code in origins)
             for city in self.covered_cities
@@ -115,8 +135,6 @@ class Snapshot(Model):
         for observation in self.observations:
             if not self.started_at <= observation.fetched_at <= self.finished_at:
                 raise ValueError("Observation outside collection interval")
-            if any(item.airport not in airports for item in observation.destinations):
-                raise ValueError("Missing destination airport geography")
         return self
 
     def catalog_data(self) -> CatalogData:
@@ -125,6 +143,7 @@ class Snapshot(Model):
             (cities[observation.origin], cities[item.airport])
             for observation in self.observations
             for item in observation.destinations
+            if item.airport in cities
             if cities[observation.origin] != cities[item.airport]
         }
         return CatalogData(

@@ -111,6 +111,45 @@ class CollectorTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             await collect(geography(), Source(), ("ZZZ",))
 
+    async def test_explicit_closed_airport_is_recorded_and_not_requested(self):
+        source = Source()
+        result = await collect(
+            geography(), source, ("MOW",), excluded_airports=("VKO",)
+        )
+        self.assertEqual(source.calls, ["SVO"])
+        self.assertEqual(result.excluded_airports, ("VKO",))
+        self.assertIn("VKO", {airport.code for airport in result.airports})
+        with self.assertRaisesRegex(ValueError, "selected city"):
+            await collect(geography(), Source(), ("MOW",), excluded_airports=("ZZZ",))
+        with self.assertRaisesRegex(ValueError, "non-excluded"):
+            await collect(
+                geography(),
+                Source(),
+                ("SVX",),
+                excluded_airports=("SVX",),
+            )
+
+    async def test_explicit_unmapped_destination_is_preserved_but_not_linked(self):
+        class SourceWithUnknown:
+            async def destinations(self, code):
+                return Observation(
+                    origin=code,
+                    fetched_at=datetime.now(UTC),
+                    destinations=(Destination(airport="ZZZ", kinds=("scheduled",)),),
+                )
+
+        with self.assertRaisesRegex(ValueError, "Unknown airport"):
+            await collect(geography(), SourceWithUnknown(), ("SVX",))
+        result = await collect(
+            geography(),
+            SourceWithUnknown(),
+            ("SVX",),
+            unmapped_airports=("ZZZ",),
+        )
+        self.assertEqual(result.unmapped_airports, ("ZZZ",))
+        self.assertEqual(result.observations[0].destinations[0].airport, "ZZZ")
+        self.assertEqual(result.catalog_data().links, ())
+
     async def test_missing_airport_in_snapshot_is_rejected(self):
         data = (await snapshot()).model_dump(mode="json")
         data["observations"] = data["observations"][:-1]
