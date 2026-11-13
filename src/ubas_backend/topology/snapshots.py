@@ -9,6 +9,8 @@ def combine_snapshots(snapshots: tuple[Snapshot, ...]) -> Snapshot:
     cities: dict[str, City] = {}
     airports: dict[str, ReferenceAirport] = {}
     covered: set[str] = set()
+    excluded: set[str] = set()
+    unmapped: set[str] = set()
     observations: list[Observation] = []
     for snapshot in snapshots:
         if covered.intersection(snapshot.covered_cities):
@@ -19,6 +21,8 @@ def combine_snapshots(snapshots: tuple[Snapshot, ...]) -> Snapshot:
         ):
             raise ValueError("Incompatible snapshot provenance")
         covered.update(snapshot.covered_cities)
+        excluded.update(snapshot.excluded_airports)
+        unmapped.update(snapshot.unmapped_airports)
         for city in snapshot.cities:
             if city.code in cities and cities[city.code] != city:
                 raise ValueError(f"Conflicting city geography: {city.code}")
@@ -34,6 +38,8 @@ def combine_snapshots(snapshots: tuple[Snapshot, ...]) -> Snapshot:
         started_at=min(item.started_at for item in snapshots),
         finished_at=max(item.finished_at for item in snapshots),
         covered_cities=tuple(sorted(covered)),
+        excluded_airports=tuple(sorted(excluded)),
+        unmapped_airports=tuple(sorted(unmapped - airports.keys())),
         cities=tuple(cities[code] for code in sorted(cities)),
         airports=tuple(airports[code] for code in sorted(airports)),
         observations=tuple(sorted(observations, key=lambda item: item.origin)),

@@ -5,6 +5,10 @@ from typing import Any
 from ubas_backend.topology.models import City, ReferenceAirport
 
 
+class UnknownAirportError(ValueError):
+    pass
+
+
 class Geography:
     def __init__(self, airports: Any, cities: Any) -> None:
         if not isinstance(airports, list) or not isinstance(cities, list):
@@ -33,7 +37,7 @@ class Geography:
     def airport(self, code: str) -> ReferenceAirport:
         raw = self._airports.get(code)
         if raw is None:
-            raise ValueError(f"Unknown airport mapping: {code}")
+            raise UnknownAirportError(f"Unknown airport mapping: {code}")
         return ReferenceAirport.model_validate(
             {
                 "code": code,
