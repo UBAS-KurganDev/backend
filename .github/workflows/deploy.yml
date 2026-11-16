@@ -46,9 +46,24 @@ jobs:
           })"
           oidc_token="$(jq --exit-status --raw-output '.value' <<<"${oidc_response}")"
           echo "::add-mask::${oidc_token}"
+          OIDC_TOKEN="${oidc_token}" python - <<'PY'
+          import base64
+          import json
+          import os
 
-          iam_response="$({
-            curl --fail --silent --show-error \
+          payload = os.environ["OIDC_TOKEN"].split(".")[1]
+          payload += "=" * (-len(payload) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(payload))
+          visible = {key: claims.get(key) for key in ("iss", "aud", "sub")}
+          print("GitHub OIDC claims:", json.dumps(visible, sort_keys=True))
+          PY
+
+          iam_response_file="$(mktemp)"
+          trap 'rm -f "${iam_response_file}"' EXIT
+          iam_status="$({
+            curl --silent --show-error \
+              --output "${iam_response_file}" \
+              --write-out '%{http_code}' \
               --request POST \
               --header 'Content-Type: application/x-www-form-urlencoded' \
               --data-urlencode 'grant_type=urn:ietf:params:oauth:grant-type:token-exchange' \
@@ -58,6 +73,16 @@ jobs:
               --data-urlencode 'subject_token_type=urn:ietf:params:oauth:token-type:id_token' \
               https://auth.yandex.cloud/oauth/token
           })"
+          if [[ "${iam_status}" != "200" ]]; then
+            error_message="$({
+              jq --compact-output \
+                '{error, error_description}' \
+                "${iam_response_file}"
+            } 2>/dev/null || printf '%s' 'unparseable response')"
+            echo "Yandex IAM token exchange failed (HTTP ${iam_status}): ${error_message}" >&2
+            exit 1
+          fi
+          iam_response="$(<"${iam_response_file}")"
           iam_token="$(jq --exit-status --raw-output '.access_token' <<<"${iam_response}")"
           echo "::add-mask::${iam_token}"
           printf 'iam_token=%s\n' "${iam_token}" >>"${GITHUB_OUTPUT}"
