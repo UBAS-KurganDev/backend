@@ -9,15 +9,20 @@ Git SHA, публикует его и обновляет API и worker чере�
 
 - folder: `prod` (`b1g74ku9ruilbkb9ie56`);
 - registry: `ubas` (`cn12qrbnsnck5l6a3en0`);
+- lifecycle policy: `ubas-keep-latest-five` (`cn16d5s5dj12dnvgqtpe`),
+  выключена до подтверждения политики хранения;
 - VM: `ubas-backend` (`fv4k2j5mqppooderha86`), `153.51.167.77`;
 - CI service account: `ubas-ci` (`aje5uv722diotvqdgqb1`), только push образов;
 - VM service account: `ubas-vm` (`ajevumq38a3sgbu6rf8l`), только pull образов.
 
 CI получает IAM-токен через GitHub OIDC и workload identity federation
 `ubas-github` (`ajenncsq1buh0g2fghsf`). Постоянный ключ сервисного аккаунта не
-создаётся. Федерация допускает только subject
-`repo:UBAS-KurganDev/backend:environment:production`. Job дополнительно проверяет,
-что ref равен `refs/heads/master`. GitHub secrets для deployment не нужны.
+создаётся. Федерация допускает только subject production environment. Организация
+GitHub добавляет в него стабильные числовые ID владельца и репозитория, поэтому
+фактическая привязка равна
+`repo:UBAS-KurganDev@334516411/backend@1390760795:environment:production`.
+Job дополнительно проверяет, что ref равен `refs/heads/master`. GitHub secrets для
+deployment не нужны.
 
 VM раз в минуту проверяет тег `master` системным timer. Pull выполняется от имени
 прикреплённого `ubas-vm` через metadata service. После pull используется digest,
@@ -54,8 +59,10 @@ Unit-файлы и конфигурация Nginx находятся в [deploym
    может быть невозможен; такие изменения требуют отдельного плана миграции.
 
 Одновременные деплои запрещены GitHub concurrency и двумя `flock` на VM. Образы, которые
-не используются больше семи дней, очищаются с локального диска VM. Registry
-очищается отдельной lifecycle policy.
+не используются больше семи дней, очищаются с локального диска VM. Для Registry
+подготовлена выключенная lifecycle policy, которая хранит последние пять версий.
+Перед включением выполнен dry run без кандидатов на удаление. Включение
+`HARD_DELETE` требует отдельного решения о глубине rollback-истории.
 
 Environment `production` используется для формирования ограниченного OIDC subject,
 но secrets и variables в нём не нужны. Облачные идентификаторы и публичный адрес
