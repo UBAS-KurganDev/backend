@@ -25,6 +25,7 @@ SQLAlchemy ORM/Core, Alembic. Зависимости через uv; Ruff и ст
 - [Подмена источников](docs/repositories.md).
 - [Сборщик топологии: источники, загрузка и обновление](docs/topology.md).
 - [Очередь, HTTP и deployment](docs/query-manager.md).
+- [Production deployment в Yandex Cloud](docs/deployment.md).
 - [Покрытие MVP и открытые вопросы](docs/mvp-coverage.md).
 - [Скрапер agent.ru: запуск, формат, кэш и ограничения](docs/agent-scraper.md).
 - [Правила разработки](AGENTS.md).

@@ -1,0 +1,12 @@
+[Unit]
+Description=Check Yandex Cloud Registry for a new UBAS release
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+RandomizedDelaySec=5s
+Persistent=true
+Unit=ubas-deploy.service
+
+[Install]
+WantedBy=timers.target

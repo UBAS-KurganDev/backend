@@ -8,7 +8,7 @@ x-database-environment: &database-environment
 x-application: &application
   build:
     context: .
-  image: ubas-backend:local
+  image: ${UBAS_IMAGE:-ubas-backend:local}
   init: true
   restart: unless-stopped
   stop_grace_period: 30s
