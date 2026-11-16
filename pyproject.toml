@@ -22,6 +22,7 @@ dependencies = [
 ubas-api = "ubas_backend.main:main"
 ubas-import-cities = "ubas_backend.import_cities:main"
 ubas-migrate = "ubas_backend.migrate:main"
+ubas-scraper-node = "ubas_backend.agent_scraper.node_api:main"
 ubas-worker = "ubas_backend.worker:main"
 
 [build-system]
