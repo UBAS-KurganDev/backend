@@ -1,0 +1,110 @@
+name: Deploy production
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  YC_OIDC_AUDIENCE: https://github.com/UBAS-KurganDev
+  YC_SERVICE_ACCOUNT_ID: aje5uv722diotvqdgqb1
+  YC_REGISTRY: registry.yandexcloud.net
+  YC_REGISTRY_ID: cn12qrbnsnck5l6a3en0
+  VM_HOST: 153.51.167.77
+
+jobs:
+  deploy:
+    name: Build and deploy
+    if: github.ref == 'refs/heads/master'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Exchange GitHub OIDC token for Yandex Cloud IAM token
+        id: yc_auth
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          oidc_audience="${YC_OIDC_AUDIENCE//:/%3A}"
+          oidc_audience="${oidc_audience//\//%2F}"
+          oidc_response="$({
+            curl --fail --silent --show-error \
+              --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${oidc_audience}"
+          })"
+          oidc_token="$(jq --exit-status --raw-output '.value' <<<"${oidc_response}")"
+          echo "::add-mask::${oidc_token}"
+
+          iam_response="$({
+            curl --fail --silent --show-error \
+              --request POST \
+              --header 'Content-Type: application/x-www-form-urlencoded' \
+              --data-urlencode 'grant_type=urn:ietf:params:oauth:grant-type:token-exchange' \
+              --data-urlencode 'requested_token_type=urn:ietf:params:oauth:token-type:access_token' \
+              --data-urlencode "audience=${YC_SERVICE_ACCOUNT_ID}" \
+              --data-urlencode "subject_token=${oidc_token}" \
+              --data-urlencode 'subject_token_type=urn:ietf:params:oauth:token-type:id_token' \
+              https://auth.yandex.cloud/oauth/token
+          })"
+          iam_token="$(jq --exit-status --raw-output '.access_token' <<<"${iam_response}")"
+          echo "::add-mask::${iam_token}"
+          printf 'iam_token=%s\n' "${iam_token}" >>"${GITHUB_OUTPUT}"
+
+      - name: Build and push images
+        shell: bash
+        env:
+          IAM_TOKEN: ${{ steps.yc_auth.outputs.iam_token }}
+        run: |
+          set -euo pipefail
+          immutable_image="${YC_REGISTRY}/${YC_REGISTRY_ID}/ubas-backend:${GITHUB_SHA}"
+          master_image="${YC_REGISTRY}/${YC_REGISTRY_ID}/ubas-backend:master"
+          trap 'docker logout "${YC_REGISTRY}" >/dev/null 2>&1 || true' EXIT
+
+          printf '%s' "${IAM_TOKEN}" | docker login \
+            --username iam \
+            --password-stdin \
+            "${YC_REGISTRY}"
+          docker build \
+            --pull \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            --tag "${immutable_image}" \
+            --tag "${master_image}" \
+            .
+          docker push "${immutable_image}"
+          docker push "${master_image}"
+
+      - name: Wait for VM deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..90}; do
+            deployed="$({
+              curl --silent --show-error \
+                --max-time 5 \
+                "http://${VM_HOST}/__version"
+            } || true)"
+            if [[ "${deployed}" == "${GITHUB_SHA}" ]]; then
+              curl --fail --silent --show-error \
+                "http://${VM_HOST}/openapi.json" \
+                >/dev/null
+              echo "VM is running ${GITHUB_SHA}"
+              exit 0
+            fi
+            echo "Waiting for VM deployment (${attempt}/90), current=${deployed:-none}"
+            sleep 10
+          done
+          echo "VM did not deploy ${GITHUB_SHA} within 15 minutes" >&2
+          exit 1

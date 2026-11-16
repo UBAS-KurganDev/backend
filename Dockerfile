@@ -30,6 +30,10 @@ COPY --from=builder /opt/venv /opt/venv
 RUN python -m playwright install --with-deps chromium \
     && chmod -R a+rX /opt/playwright
 COPY docker/entrypoint.py /app/docker-entrypoint.py
+COPY compose.yaml /opt/ubas-deployment/compose.yaml
+COPY config/planner.json /opt/ubas-deployment/planner.json
+COPY scripts/deploy-production.sh /opt/ubas-deployment/deploy-production.sh
+COPY scripts/poll-production.sh /opt/ubas-deployment/poll-production.sh
 
 USER ubas
 EXPOSE 8000
