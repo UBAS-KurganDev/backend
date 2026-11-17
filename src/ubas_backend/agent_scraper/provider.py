@@ -10,6 +10,8 @@ from ubas_backend.agent_scraper.airports import AirportDirectory, default_direct
 from ubas_backend.agent_scraper.config import Settings
 from ubas_backend.agent_scraper.mapping import map_response
 from ubas_backend.agent_scraper.models import SearchRequest
+from ubas_backend.agent_scraper.nodes import NodeSearchService
+from ubas_backend.agent_scraper.ports import OfferService
 from ubas_backend.agent_scraper.service import FlightSearchService
 from ubas_backend.routing.ports import FlightProviderError
 from ubas_backend.routing.schemas import FlightQuery, FlightSearchResult, TicketOffer
@@ -32,7 +34,7 @@ def _next_occurrence(day: date, today: date) -> date | None:
 class AgentFlightProvider:
     def __init__(
         self,
-        service: FlightSearchService | None = None,
+        service: OfferService | None = None,
         *,
         airports: AirportDirectory | None = None,
     ) -> None:
@@ -117,24 +119,31 @@ class AgentFlightProvider:
         await self._service.aclose()
 
 
+def _airport_directory(settings: Settings) -> AirportDirectory | None:
+    if settings.topology_snapshot_path is None:
+        return None
+    from ubas_backend.topology.models import Snapshot
+
+    snapshot = Snapshot.model_validate_json(
+        settings.topology_snapshot_path.read_bytes()
+    )
+    return AirportDirectory(
+        snapshot.airports,
+        frozenset(
+            airport.code
+            for airport in snapshot.airports
+            if airport.flightable and airport.city_code in snapshot.covered_cities
+        ),
+        fallback=default_directory(),
+    )
+
+
 def create_flight_provider() -> AgentFlightProvider:
     settings = Settings()
-    airports = None
-    if settings.topology_snapshot_path is not None:
-        from ubas_backend.topology.models import Snapshot
-
-        snapshot = Snapshot.model_validate_json(
-            settings.topology_snapshot_path.read_bytes()
-        )
-        airports = AirportDirectory(
-            snapshot.airports,
-            frozenset(
-                airport.code
-                for airport in snapshot.airports
-                if airport.flightable and airport.city_code in snapshot.covered_cities
-            ),
-            fallback=default_directory(),
-        )
-    return AgentFlightProvider(
-        FlightSearchService(settings=settings), airports=airports
+    airports = _airport_directory(settings)
+    service: OfferService = (
+        NodeSearchService(settings)
+        if settings.node_urls
+        else FlightSearchService(settings=settings)
     )
+    return AgentFlightProvider(service, airports=airports)
