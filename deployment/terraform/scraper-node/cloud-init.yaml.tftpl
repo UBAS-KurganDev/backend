@@ -1,0 +1,67 @@
+#cloud-config
+package_update: false
+package_upgrade: false
+
+write_files:
+  - path: /usr/local/sbin/ubas-scraper-node-start
+    owner: root:root
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      export DEBIAN_FRONTEND=noninteractive
+
+      apt-get update
+      apt-get install -y ca-certificates curl jq
+
+      install -m 0755 -d /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+        -o /etc/apt/keyrings/docker.asc
+      chmod a+r /etc/apt/keyrings/docker.asc
+      . /etc/os-release
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $${VERSION_CODENAME} stable" \
+        > /etc/apt/sources.list.d/docker.list
+      apt-get update
+      apt-get install -y docker-ce docker-ce-cli containerd.io
+      systemctl enable --now docker
+
+      metadata_url="http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token"
+      iam_token="$(curl -fsS -H 'Metadata-Flavor: Google' "$${metadata_url}" | jq -r .access_token)"
+      printf '%s' "$${iam_token}" | docker login \
+        --username iam \
+        --password-stdin \
+        '${registry_host}'
+      trap 'docker logout ${registry_host} >/dev/null 2>&1 || true' EXIT
+
+      for attempt in $(seq 1 60); do
+        if docker pull '${image}'; then
+          break
+        fi
+        if [ "$${attempt}" -eq 60 ]; then
+          echo "container image pull failed" >&2
+          exit 1
+        fi
+        sleep 10
+      done
+
+      docker rm -f '${container_name}' >/dev/null 2>&1 || true
+      docker run -d \
+        --name '${container_name}' \
+        --restart unless-stopped \
+        --entrypoint /opt/venv/bin/ubas-scraper-node \
+        --shm-size=1g \
+        --log-driver json-file \
+        --log-opt max-size=10m \
+        --log-opt max-file=3 \
+        -p '${node_port}:${node_port}' \
+        -e UBAS_AGENT_HEADLESS=true \
+        -e UBAS_AGENT_MAX_CONCURRENCY='${node_concurrency}' \
+        -e UBAS_AGENT_TIMEOUT_SECONDS='${node_timeout}' \
+        -e UBAS_AGENT_MAX_ATTEMPTS='${node_max_attempts}' \
+        -e UBAS_AGENT_NODE_TOKEN='${node_token}' \
+        '${image}' \
+        --host 0.0.0.0 \
+        --port '${node_port}'
+
+runcmd:
+  - [bash, /usr/local/sbin/ubas-scraper-node-start]

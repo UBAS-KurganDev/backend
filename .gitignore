@@ -36,6 +36,16 @@ src/ubas_backend/agent_scraper/exported_reports/
 # Local runtime data (SQLite catalog seeded by agent_scraper.catalog)
 var/
 
+# Terraform local state and secrets
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+
 # Generated catalogs (prepare demo data with routing.demo --catalog).
 var/*.sqlite3
 var/*.sqlite3-*

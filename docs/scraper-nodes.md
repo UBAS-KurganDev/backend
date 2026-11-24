@@ -119,6 +119,24 @@ uv run --env-file .env ubas-worker
 TLS, аутентификации и сетевой изоляции. `UBAS_AGENT_NODE_TOKEN` — только общий
 секрет, не авторизация пользователей.
 
+## VM в Yandex Cloud через Terraform
+
+Для прототипа есть отдельный Terraform-модуль
+[deployment/terraform/scraper-node](../deployment/terraform/scraper-node/README.md).
+Одна команда создаёт VPC, subnet, security group, service account, VM и запускает
+контейнер ноды через cloud-init, затем ждёт `/healthz`:
+
+```shell
+./deployment/terraform/scraper-node/apply.sh
+```
+
+`node_count=2 ./deployment/terraform/scraper-node/apply.sh` поднимает две VM;
+`terraform output -raw worker_env` печатает значения `UBAS_AGENT_NODE_*`.
+Модуль создаёт отдельную инфраструктуру и не меняет production VM `ubas-backend`.
+По умолчанию порт ноды открыт в интернет и защищён сгенерированным токеном;
+ограничьте `node_allowed_cidrs` сетью worker'а. Токен хранится в Terraform state
+и в metadata VM, поэтому state нельзя коммитить.
+
 ## Замер скорости
 
 Скрипт запускает две настоящие локальные HTTP-ноды с детерминированной

@@ -68,3 +68,19 @@ Environment `production` используется для формировани�
 но secrets и variables в нём не нужны. Облачные идентификаторы и публичный адрес
 не являются секретами и закреплены в workflow. При замене VM нужно обновить
 `VM_HOST`, переустановить systemd timer и перенести постоянный каталог.
+
+## Дополнительные скрапер-ноды
+
+Production VM выше обслуживает API и worker. Для ускорения билетного поиска
+можно отдельно поднять N скрапер-нод в том же облаке:
+
+```shell
+./deployment/terraform/scraper-node/apply.sh
+```
+
+Terraform создаёт изолированные VPC, subnet, service account и VM, запускает
+контейнер `ubas-scraper-node` и печатает `UBAS_AGENT_NODE_*` для worker.
+Модуль не изменяет `ubas-backend`, его сеть, диск или PostgreSQL. Ограничения и
+порядок обновления описаны в
+[deployment/terraform/scraper-node](../deployment/terraform/scraper-node/README.md)
+и [scraper-nodes.md](scraper-nodes.md).

@@ -1,0 +1,12 @@
+provider_installation {
+  # Yandex Cloud mirrors registry.terraform.io for networks where direct
+  # HashiCorp registry access is unavailable.
+  network_mirror {
+    url     = "https://terraform-mirror.yandexcloud.net/"
+    include = ["registry.terraform.io/*/*"]
+  }
+
+  direct {
+    exclude = ["registry.terraform.io/*/*"]
+  }
+}

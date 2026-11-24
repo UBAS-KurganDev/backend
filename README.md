@@ -30,6 +30,7 @@ SQLAlchemy ORM/Core, Alembic. Зависимости через uv; Ruff и ст
 - [Покрытие MVP и открытые вопросы](docs/mvp-coverage.md).
 - [Скрапер agent.ru: запуск, формат, кэш и ограничения](docs/agent-scraper.md).
 - [Параллельный сбор на N скрапер-нодах и замер скорости](docs/scraper-nodes.md).
+- [Terraform для VM скрапер-ноды в Yandex Cloud](deployment/terraform/scraper-node/README.md).
 - [Правила разработки](AGENTS.md).
 - [Охват расширенной топологии и ограничения поиска](docs/topology-coverage.md).
 

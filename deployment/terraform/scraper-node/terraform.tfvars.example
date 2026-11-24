@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars or export TF_VAR_* variables.
+folder_id = "<yandex-cloud-folder-id>"
+
+# Immutable image tag is safer than the mutable master tag.
+# image = "registry.yandexcloud.net/cn12qrbnsnck5l6a3en0/ubas-backend:<git-sha>"
+
+# node_count = 2
+# node_allowed_cidrs = ["203.0.113.10/32"]  # worker egress address
+# ssh_allowed_cidrs  = ["203.0.113.10/32"]  # your administration address
+# ssh_public_key     = "ssh-ed25519 AAAA... user@example"
+
+# node_concurrency = 2
+# node_port        = 8101
+# node_token       = "optional-existing-shared-token"
