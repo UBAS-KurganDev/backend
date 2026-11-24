@@ -130,7 +130,7 @@ TLS, аутентификации и сетевой изоляции. `UBAS_AGEN
 ./deployment/terraform/scraper-node/apply.sh
 ```
 
-`node_count=2 ./deployment/terraform/scraper-node/apply.sh` поднимает две VM;
+`TF_VAR_node_count=2 ./deployment/terraform/scraper-node/apply.sh` поднимает две VM;
 `terraform output -raw worker_env` печатает значения `UBAS_AGENT_NODE_*`.
 Модуль создаёт отдельную инфраструктуру и не меняет production VM `ubas-backend`.
 По умолчанию порт ноды открыт в интернет и защищён сгенерированным токеном;

@@ -70,7 +70,7 @@ Copy `terraform.tfvars.example` to `terraform.tfvars` and edit it, or use
 Two nodes in one command:
 
 ```shell
-node_count=2 ./deployment/terraform/scraper-node/apply.sh
+TF_VAR_node_count=2 ./deployment/terraform/scraper-node/apply.sh
 ```
 
 or in `terraform.tfvars`:
