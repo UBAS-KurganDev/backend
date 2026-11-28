@@ -544,28 +544,22 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
             {DAY + timedelta(days=i) for i in range(3)},
         )
 
-    async def test_city_expands_airports_and_failure_does_not_cancel_siblings(self):
+    async def test_city_search_is_single_request_and_failure_raises(self):
         service = SimpleNamespace(get_offers=AsyncMock(return_value=empty()))
         result = await AgentFlightProvider(service).search(query(origin="MOW"))
         self.assertTrue(result.complete)
-        self.assertEqual(
-            {call.args[0].origin for call in service.get_offers.call_args_list},
-            {"SVO", "DME", "VKO", "ZIA"},
-        )
-        finished: set[str] = set()
+        calls = service.get_offers.call_args_list
+        # City-level search: one request covers every airport of the city.
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0].args[0].origin, "MOW")
+        self.assertEqual(calls[0].args[0].destination, "AYT")
 
         async def search(req):
-            if req.origin == "SVO":
-                raise FlightProviderError("offline")
-            await asyncio.sleep(0)
-            finished.add(req.origin)
-            return empty()
+            raise FlightProviderError("offline")
 
+        failing = SimpleNamespace(get_offers=search)
         with self.assertRaises(FlightProviderError):
-            await AgentFlightProvider(SimpleNamespace(get_offers=search)).search(
-                query(origin="MOW")
-            )
-        self.assertEqual(finished, {"DME", "VKO", "ZIA"})
+            await AgentFlightProvider(failing).search(query(origin="MOW"))
 
     async def test_truncation_and_mapping_failure_mark_incomplete(self):
         service = SimpleNamespace(get_offers=AsyncMock(return_value=captured()))

@@ -60,10 +60,10 @@ class AirportDirectoryTests(unittest.IsolatedAsyncioTestCase):
                 query(origin="LON")
             )
         self.assertTrue(result.complete)
-        self.assertEqual(
-            {call.args[0].origin for call in service.get_offers.call_args_list},
-            {"LHR", "LGW"},
-        )
+        calls = service.get_offers.call_args_list
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0].args[0].origin, "LON")
+        self.assertEqual(calls[0].args[0].destination, "AYT")
         value = one_ticket()
         first, last = raw_ticket(value)["flights_info"]
         first.update(

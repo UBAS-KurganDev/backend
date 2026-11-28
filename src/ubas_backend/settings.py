@@ -97,6 +97,15 @@ class Settings:
 
 def load_planner_config() -> PlannerConfig:
     path = os.getenv("UBAS_PLANNER_CONFIG_PATH")
-    if not path:
-        return PlannerConfig()
-    return PlannerConfig.model_validate_json(Path(path).read_text(encoding="utf-8"))
+    config = PlannerConfig()
+    if path:
+        config = PlannerConfig.model_validate_json(
+            Path(path).read_text(encoding="utf-8")
+        )
+    if os.getenv("UBAS_ALLOW_INCOMPLETE_RESULTS", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }:
+        config = config.model_copy(update={"allow_incomplete_results": True})
+    return config

@@ -136,7 +136,16 @@ class QueryWorker:
                 finally:
                     query_context.reset(token)
                 if not result.complete:
-                    raise IncompleteSearchError(result.warnings)
+                    if not result.routes:
+                        raise IncompleteSearchError(result.warnings)
+                    # Partial routes are still valuable; deliver them with warnings.
+                    logger.warning(
+                        "Search incomplete; delivering partial result",
+                        extra={
+                            "query_id": str(claimed.query_id),
+                            "warnings": ", ".join(result.warnings),
+                        },
+                    )
         except InvalidRouteRequest as error:
             await self._repository.fail(
                 claimed.query_id,

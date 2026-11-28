@@ -143,8 +143,13 @@ class RoutePlanner:
             diagnostics,
             now=fixed_now,
         )
-        if not diagnostics.complete:
+        if not diagnostics.complete and not self.config.allow_incomplete_results:
             raise IncompleteSearchError(tuple(diagnostics.warnings))
+        # Allow mode: run route search regardless; the flag below keeps the
+        # ticket-phase verdict in the final result.
+        tickets_complete = diagnostics.complete
+        if not tickets_complete:
+            diagnostics.complete = True
         if origin is None:
             origin_airports = {
                 offer.segments[0].origin
@@ -170,7 +175,7 @@ class RoutePlanner:
         ranked = await RouteSearch(self.config, builder).run(
             offers, request, diagnostics, fixed_now or datetime.now(UTC)
         )
-        if not diagnostics.complete:
+        if not diagnostics.complete and not self.config.allow_incomplete_results:
             raise IncompleteSearchError(tuple(diagnostics.warnings))
         return PlanResult(
             routes=ranked,
@@ -183,7 +188,7 @@ class RoutePlanner:
             ),
             evaluated_candidates=diagnostics.evaluated,
             rejected=dict(diagnostics.rejected),
-            complete=True,
+            complete=diagnostics.complete and tickets_complete,
             warnings=tuple(dict.fromkeys(diagnostics.warnings)),
             generated_at=fixed_now or datetime.now(UTC),
         )
