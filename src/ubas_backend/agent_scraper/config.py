@@ -1,7 +1,7 @@
 """Scraper settings; environment is supplied by the launcher, not read on import."""
 
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 from urllib.parse import urlsplit
 
 from pydantic import Field, SecretStr, field_validator
@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     headless: bool = True
     topology_snapshot_path: Path | None = None
     redis_url: SecretStr | None = None
+    # http: pure-HTTP agent.ru transport with automatic browser fallback.
+    transport: Literal["browser", "http"] = "browser"
     # Operational cache retention, not a promise that a fare is still available.
     cache_ttl_seconds: int = Field(default=1800, ge=1, le=172800)
     cache_max_entries: int = Field(default=128, ge=1, le=10000)

@@ -97,7 +97,7 @@ class TicketOffer(Model):
 
 
 class FlightQuery(Model):
-    """One local departure date, all city airports and tickets up to max_segments."""
+    """One local departure date; city or airport pair per `city_search`."""
 
     origin: Code
     destination: Code
@@ -106,6 +106,10 @@ class FlightQuery(Model):
     passengers: int = Field(ge=1, le=9)
     currency: Code = "RUB"
     limit: int = Field(ge=1)
+    city_search: bool = True
+    # Airport mode: optional explicit subset of the city's airports.
+    origin_airports: tuple[Code, ...] = ()
+    destination_airports: tuple[Code, ...] = ()
 
     @model_validator(mode="after")
     def valid_query(self) -> Self:
@@ -201,6 +205,11 @@ class RouteRequest(RouteInput):
     limit: int = Field(ge=1, le=50, default=10)
     excluded_cities: tuple[Code, ...] = ()
     checked_baggage_required: bool = False
+    # Internal: True lets the source aggregate all city airports in one search.
+    # API requests always default to True; the 4-field MVP body is frozen.
+    city_search: bool = True
+    origin_airports: tuple[Code, ...] = ()
+    destination_airports: tuple[Code, ...] = ()
 
 
 class VisitMetrics(Model):

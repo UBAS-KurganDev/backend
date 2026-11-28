@@ -42,6 +42,9 @@ def build_queries(
                 currency="RUB",
                 limit=config.max_offers_per_query,
                 max_segments=max_segments,
+                city_search=request.city_search,
+                origin_airports=request.origin_airports,
+                destination_airports=request.destination_airports,
             )
 
 

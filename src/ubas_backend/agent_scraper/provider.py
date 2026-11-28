@@ -3,18 +3,27 @@
 import asyncio
 import logging
 from datetime import UTC, date, datetime
-from itertools import product
 from zoneinfo import ZoneInfo
 
 from ubas_backend.agent_scraper.airports import AirportDirectory, default_directory
 from ubas_backend.agent_scraper.config import Settings
+from ubas_backend.agent_scraper.http_transport import run_http_scraper
 from ubas_backend.agent_scraper.mapping import map_response
 from ubas_backend.agent_scraper.models import SearchRequest
 from ubas_backend.agent_scraper.nodes import NodeSearchService
 from ubas_backend.agent_scraper.ports import OfferService
-from ubas_backend.agent_scraper.service import FlightSearchService
+from ubas_backend.agent_scraper.scraper_agent import run_agent_scraper
+from ubas_backend.agent_scraper.service import (
+    FlightSearchService,
+    Scrape,
+)
 from ubas_backend.routing.ports import FlightProviderError
-from ubas_backend.routing.schemas import FlightQuery, FlightSearchResult, TicketOffer
+from ubas_backend.routing.schemas import (
+    Airport,
+    FlightQuery,
+    FlightSearchResult,
+    TicketOffer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +46,16 @@ class AgentFlightProvider:
         service: OfferService | None = None,
         *,
         airports: AirportDirectory | None = None,
+        settings: Settings | None = None,
     ) -> None:
-        self._service = service or FlightSearchService()
+        resolved = settings or Settings()
+        if service is not None:
+            self._service = service
+        else:
+            scrape: Scrape = (
+                run_http_scraper if resolved.transport == "http" else run_agent_scraper
+            )
+            self._service = FlightSearchService(settings=resolved, scrape=scrape)
         self._airports = airports or default_directory()
 
     async def _search_airports(
@@ -61,11 +78,34 @@ class AgentFlightProvider:
             max_segments=max_segments,
         )
 
+    def _resolve(self, code: str) -> tuple[Airport, ...]:
+        """City airports for a city code, or the single requested airport."""
+        airports = self._airports.airports_for_city(code)
+        if airports:
+            return airports
+        single = self._airports.airport_for_code(code)
+        return (single,) if single else ()
+
+    def _select(
+        self,
+        airports: tuple[Airport, ...],
+        codes: tuple[str, ...],
+    ) -> tuple[Airport, ...]:
+        """Narrow a city's airports to the ones the request asked for."""
+        if not codes:
+            return airports
+        wanted = set(codes)
+        return tuple(airport for airport in airports if airport.code in wanted)
+
     async def search(self, query: FlightQuery) -> FlightSearchResult:
         if query.passengers != 1 or query.currency != "RUB":
             raise FlightProviderError("agent_unsupported_query")
-        origins = self._airports.airports_for_city(query.origin)
-        destinations = self._airports.airports_for_city(query.destination)
+        origins = self._resolve(query.origin)
+        destinations = self._resolve(query.destination)
+        if not query.city_search:
+            # Airport mode may narrow the city to requested airports.
+            origins = self._select(origins, query.origin_airports)
+            destinations = self._select(destinations, query.destination_airports)
         if not origins or not destinations:
             raise FlightProviderError("agent_unsupported_city")
         today = datetime.now(UTC).astimezone(ZoneInfo(origins[0].timezone)).date()
@@ -74,30 +114,55 @@ class AgentFlightProvider:
         # The source URL has no year. Do not silently search the wrong year.
         if _next_occurrence(query.departure_date, today) != query.departure_date:
             raise FlightProviderError("agent_unsupported_year")
-        pairs = tuple(product(origins, destinations))
-        tasks = [
-            asyncio.create_task(
-                self._search_airports(
-                    SearchRequest(
-                        origin=origin.code,
-                        destination=destination.code,
-                        depart_date=query.departure_date,
-                    ),
-                    query.max_segments,
-                )
+        # City-level search covers every airport combination in one request:
+        # the source aggregates across airports of the city codes itself.
+        # Airport mode keeps the explicit airport-pair expansion instead.
+        pairs: tuple[SearchRequest, ...]
+        if query.city_search:
+            pairs = (
+                SearchRequest(
+                    origin=query.origin,
+                    destination=query.destination,
+                    depart_date=query.departure_date,
+                ),
             )
-            for origin, destination in pairs
-        ]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        else:
+            pairs = tuple(
+                SearchRequest(
+                    origin=origin.code,
+                    destination=destination.code,
+                    depart_date=query.departure_date,
+                )
+                for origin in origins
+                for destination in destinations
+            )
+        try:
+            results = await asyncio.gather(
+                *(
+                    self._search_airports(request, query.max_segments)
+                    for request in pairs
+                ),
+                return_exceptions=True,
+            )
+        except FlightProviderError as error:
+            logger.warning(
+                "agent_city_pair_failed origin=%s destination=%s date=%s",
+                query.origin,
+                query.destination,
+                query.departure_date,
+            )
+            raise FlightProviderError("agent_airport_search_failed") from error
         failures = [result for result in results if isinstance(result, BaseException)]
-        if failures:
-            # All successful airport pairs have reached the cache before failure.
+        if failures and query.city_search:
+            # City search is all-or-nothing: any failure means no coverage.
             raise FlightProviderError("agent_airport_search_failed") from failures[0]
         offers: list[TicketOffer] = []
         warnings: set[str] = set()
         complete = True
         for result in results:
             if isinstance(result, BaseException):
+                complete = False
+                warnings.add("incomplete_provider")
                 continue
             complete &= result.complete
             warnings.update(result.warnings)
@@ -106,6 +171,14 @@ class AgentFlightProvider:
                 for offer in result.offers
                 if len(offer.segments) <= query.max_segments
             )
+        origin_codes = {airport.code for airport in origins}
+        destination_codes = {airport.code for airport in destinations}
+        offers = [
+            offer
+            for offer in offers
+            if offer.segments[0].origin.code in origin_codes
+            and offer.segments[-1].destination.code in destination_codes
+        ]
         if len(offers) > query.limit:
             complete = False
             warnings.add("agent_offer_limit")
@@ -141,9 +214,14 @@ def _airport_directory(settings: Settings) -> AirportDirectory | None:
 def create_flight_provider() -> AgentFlightProvider:
     settings = Settings()
     airports = _airport_directory(settings)
-    service: OfferService = (
-        NodeSearchService(settings)
-        if settings.node_urls
-        else FlightSearchService(settings=settings)
-    )
+    service: OfferService
+    if settings.transport == "http":
+        # Pure-HTTP transport is in-process; browser nodes are not involved.
+        service = FlightSearchService(settings=settings, scrape=run_http_scraper)
+    else:
+        service = (
+            NodeSearchService(settings)
+            if settings.node_urls
+            else FlightSearchService(settings=settings)
+        )
     return AgentFlightProvider(service, airports=airports)

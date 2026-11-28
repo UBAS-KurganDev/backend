@@ -29,6 +29,9 @@ class PlannerConfig(Model):
     max_concurrent_queries: int = Field(ge=1, default=8)
     query_timeout_seconds: float = Field(gt=0, default=30)
     search_timeout_seconds: float = Field(gt=0, default=1200)
+    # Opt-in: deliver routes built from partial ticket coverage instead of failing.
+    # Default keeps the strict "never publish partial cards" contract.
+    allow_incomplete_results: bool = False
 
     @model_validator(mode="after")
     def rub_is_identity(self) -> Self:
