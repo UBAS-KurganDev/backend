@@ -158,9 +158,7 @@ class HttpTransport:
                 break
             next_token = data.get("next_token") or None
             await asyncio.sleep(_human_delay())
-        return CapturedOffers(
-            fetched_at=datetime.now(UTC), data=accumulator.data
-        )
+        return CapturedOffers(fetched_at=datetime.now(UTC), data=accumulator.data)
 
     async def aclose(self) -> None:
         await self._client.aclose()

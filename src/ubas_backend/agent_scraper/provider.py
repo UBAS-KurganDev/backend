@@ -53,13 +53,9 @@ class AgentFlightProvider:
             self._service = service
         else:
             scrape: Scrape = (
-                run_http_scraper
-                if resolved.transport == "http"
-                else run_agent_scraper
+                run_http_scraper if resolved.transport == "http" else run_agent_scraper
             )
-            self._service = FlightSearchService(
-                settings=resolved, scrape=scrape
-            )
+            self._service = FlightSearchService(settings=resolved, scrape=scrape)
         self._airports = airports or default_directory()
 
     async def _search_airports(
